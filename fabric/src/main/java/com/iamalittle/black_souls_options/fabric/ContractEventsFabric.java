@@ -3,8 +3,6 @@ package com.iamalittle.black_souls_options.fabric;
 import com.iamalittle.black_souls_options.common.Events;
 import com.iamalittle.black_souls_options.contracts.GlobalContractManager;
 import com.iamalittle.black_souls_options.contracts.ContractSyncManager;
-import com.iamalittle.black_souls_options.contracts.ContractManager;
-import com.iamalittle.black_souls_options.contracts.Contract;
 import com.iamalittle.black_souls_options.contracts.effects.mobs.AxolotlContract;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -14,7 +12,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
 
 /**
  * Fabric版本的契约事件处理器
@@ -47,14 +44,6 @@ public class ContractEventsFabric {
             System.out.println("[BLACKSOULS] Contract manager removed for player: " + listener.player.getScoreboardName());
         });
         
-        // 玩家死亡事件处理 - 使用实体死亡事件
-        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
-            // 检查实体是否是玩家且已死亡
-            if (entity instanceof ServerPlayer && !entity.isAlive()) {
-                ServerPlayer player = (ServerPlayer) entity;
-                onPlayerDeath(player, null);
-            }
-        });
 
         
         // 定期保存契约数据
@@ -87,24 +76,5 @@ public class ContractEventsFabric {
     
     private static void onServerTick(MinecraftServer server) {
         GlobalContractManager.getInstance().tick();
-    }
-    
-    /**
-     * 处理玩家死亡事件，停用所有契约效果
-     */
-    private static void onPlayerDeath(Player player, DamageSource damageSource) {
-        if (player instanceof ServerPlayer) {
-            ServerPlayer serverPlayer = (ServerPlayer) player;
-            ContractManager manager = GlobalContractManager.getInstance().getContractManager(serverPlayer);
-            if (manager != null) {
-                // 停用所有契约效果
-                for (Contract contract : manager.getAllContracts()) {
-                    contract.deactivateEffects(serverPlayer);
-                }
-                // 保存状态变化到文件中
-                manager.markForSave();
-                System.out.println("[BLACKSOULS] All contract effects deactivated on player death: " + serverPlayer.getScoreboardName());
-            }
-        }
     }
 }

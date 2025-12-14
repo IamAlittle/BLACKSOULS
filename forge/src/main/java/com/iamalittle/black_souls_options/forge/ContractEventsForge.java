@@ -80,6 +80,7 @@ public class ContractEventsForge {
     
     @SubscribeEvent
     public static void onPlayerDeath(LivingDeathEvent event) {
+        // 玩家死亡事件，停用所有契约效果
         if (event.getEntity() instanceof ServerPlayer) {
             ServerPlayer player = (ServerPlayer) event.getEntity();
             ContractManager manager = GlobalContractManager.getInstance().getContractManager(player);
@@ -88,8 +89,6 @@ public class ContractEventsForge {
                 for (Contract contract : manager.getAllContracts()) {
                     contract.deactivateEffects(player);
                 }
-                // 保存状态变化到文件中
-                manager.markForSave();
                 System.out.println("[BLACKSOULS] All contract effects deactivated on player death: " + player.getScoreboardName());
             }
         }

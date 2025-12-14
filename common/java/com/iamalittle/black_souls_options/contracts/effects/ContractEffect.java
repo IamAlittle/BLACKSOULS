@@ -86,13 +86,6 @@ public abstract class ContractEffect {
     public void tick(Player player) {
         if (!isActive) return;
         
-        // 检查玩家是否存活，如果玩家死亡则停用效果
-        if (player == null || !player.isAlive()) {
-            onDeactivate(player);
-            this.isActive = false;
-            return;
-        }
-        
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastTickTime >= getTickInterval()) {
             onTick(player);
