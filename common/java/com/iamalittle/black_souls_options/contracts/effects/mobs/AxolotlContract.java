@@ -47,6 +47,10 @@ public class AxolotlContract extends ContractEffect {
         if (player != null) {
             sendDeactivationMessage(player);
         }
+        // 重置移动检测状态（关键修复）
+        lastPosition = null;
+        stillnessStartTime = 0;
+        isDetectingStillness = false;
     }
     
     @Override

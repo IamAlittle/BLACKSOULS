@@ -25,8 +25,9 @@ public class ContractSyncManager {
                 System.out.println("[BLACKSOULS] Contract data reloaded for player: " + player.getScoreboardName());
             }
             
-            // 不再自动激活契约效果
-            System.out.println("[BLACKSOULS] Contract data loaded for player: " + player.getScoreboardName());
+            // 关键修复：重生时重新激活所有契约效果
+            manager.activateAllEffects(player);
+            System.out.println("[BLACKSOULS] Contract effects reactivated for player: " + player.getScoreboardName());
         }
     }
     
