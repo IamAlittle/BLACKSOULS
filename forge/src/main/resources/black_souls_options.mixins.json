@@ -13,7 +13,17 @@
     "PlayerInteractionMixin",
     "PlayerVisibilityMixin",
     "PlayerPoseMixin",
-    "MixinBlockItem"
+    "PlayerSwimSpeedMixin",
+    "PlayerStepUpMixin",
+    "PlayerBerryBushMixin",
+    "EnderManDamageMixin",
+    "GuardianThornsMixin",
+    "MixinBlockItem",
+    "MixinItemStack",
+    "MixinItem",
+    "MixinCactusItem",
+    "CactusUseMixin",
+    "CreeperAIMixin"
   ],
   "client": [
     "MixinLevelRenderer",

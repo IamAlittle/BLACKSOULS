@@ -9,14 +9,26 @@
   },
   "mixinPriority": 500,
   "mixins": [
+    "EnderManDamageMixin",
+    "GuardianThornsMixin",
     "PlayerCanBeSeenAsEnemyMixin",
     "PlayerInteractionMixin",
     "PlayerVisibilityMixin",
     "PlayerPoseMixin",
+    "PlayerSwimSpeedMixin",
+    "PlayerStepUpMixin",
+    "PlayerBerryBushMixin",
     "MixinBlockItem",
-    "PlayerRespawnMixin"
+    "MixinItemStack",
+    "MixinItem",
+    "MixinCactusItem",
+    "CactusUseMixin",
+    "CreeperAIMixin",
+    "TridentDamageMixin"
   ],
   "client": [
+    "GuiMixin",
+    "MixinLevelRenderer",
     "MixinPauseScreen",
     "MixinLivingEntity"
   ],

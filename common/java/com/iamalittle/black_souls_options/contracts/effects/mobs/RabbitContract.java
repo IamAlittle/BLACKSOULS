@@ -26,11 +26,18 @@ public class RabbitContract extends ContractEffect {
     }
     
     @Override
-    protected void onActivate(Player player) {
+    protected void onActivate(Player player, boolean sendMessage) {
         if (player != null) {
             // 激活时立即应用跳跃提升效果
             applyJumpBoost(player);
-            sendActivationMessage(player);
+            // 使用契约目标名称发送消息（仅在需要时发送）
+            if (sendMessage) {
+                String entityName = effectData.getString("contractEntityName");
+                if (entityName.isEmpty()) {
+                    entityName = displayName; // 回退到效果名称
+                }
+                sendActivationMessage(player, entityName);
+            }
         }
     }
     
@@ -39,7 +46,12 @@ public class RabbitContract extends ContractEffect {
         if (player != null) {
             // 停用效果时移除跳跃提升
             removeJumpBoost(player);
-            sendDeactivationMessage(player);
+            // 使用契约目标名称发送消息
+            String entityName = effectData.getString("contractEntityName");
+            if (entityName.isEmpty()) {
+                entityName = displayName; // 回退到效果名称
+            }
+            sendDeactivationMessage(player, entityName);
         }
     }
     
@@ -93,7 +105,7 @@ public class RabbitContract extends ContractEffect {
      */
     @Override
     protected long getTickInterval() {
-        return 500; // 500毫秒检查一次效果是否存在
+        return 500;
     }
     
     /**

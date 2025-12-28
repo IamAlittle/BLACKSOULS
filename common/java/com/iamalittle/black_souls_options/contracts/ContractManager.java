@@ -1,6 +1,7 @@
 package com.iamalittle.black_souls_options.contracts;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -11,6 +12,7 @@ import net.minecraft.nbt.NbtIo;
 import com.iamalittle.black_souls_options.common.Events;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffectRegistry;
+import com.iamalittle.black_souls_options.network.ContractNetworkHandler;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -30,18 +32,32 @@ public class ContractManager {
         this.owner = player;
         this.contracts = new HashMap<>();
         
-        // 构建保存文件路径：存档路径/playerdata/contracts/玩家uuid.dat
-        File worldDir = player.level().getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).toFile();
-        File contractsDir = new File(worldDir, "contracts");
-        this.saveFile = new File(contractsDir, player.getUUID().toString() + ".dat");
-        
-        // 确保目录存在
-        if (!contractsDir.exists()) {
-            contractsDir.mkdirs();
+        // 关键修复：检查是否在服务器端执行
+        if (player == null || player.level() == null || player.level().isClientSide()) {
+            // 客户端创建管理器，使用临时文件路径
+            this.saveFile = new File("temp_contracts", player != null ? player.getUUID().toString() + ".dat" : "unknown.dat");
+            System.out.println("[BLACKSOULS] Client ContractManager created for: " + (player != null ? player.getScoreboardName() : "null"));
+        } else {
+            // 关键修复：检查玩家状态，避免在玩家死亡或无效状态下初始化
+            if (player.level().getServer() == null) {
+                // 玩家无效，无法获取服务器路径，使用临时文件路径
+                this.saveFile = new File("temp_contracts", player != null ? player.getUUID().toString() + ".dat" : "unknown.dat");
+                System.err.println("[BLACKSOULS] Warning: ContractManager created for invalid player, using temporary file path");
+            } else {
+                // 构建保存文件路径：存档路径/playerdata/contracts/玩家uuid.dat
+                File worldDir = player.level().getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).toFile();
+                File contractsDir = new File(worldDir, "contracts");
+                this.saveFile = new File(contractsDir, player.getUUID().toString() + ".dat");
+                
+                // 确保目录存在
+                if (!contractsDir.exists()) {
+                    contractsDir.mkdirs();
+                }
+                
+                // 加载现有数据（仅在服务器端）
+                loadFromFile();
+            }
         }
-        
-        // 加载现有数据
-        loadFromFile();
         
         // 注册实体移动事件监听器，实现实时坐标更新
         Events.EntityMoved.add(this::onEntityMoved);
@@ -51,9 +67,15 @@ public class ContractManager {
     }
     
     /**
-     * 创建新契约
+     * 创建新契约（仅在服务器端执行）
      */
     public void createContract(UUID entityUuid, String entityType, String entityName, Vec3 position, String dimension) {
+        // 检查是否在服务器端执行
+        if (owner == null || owner.level() == null || owner.level().isClientSide()) {
+            System.out.println("[BLACKSOULS] Warning: Attempted to create contract on client side");
+            return;
+        }
+        
         Contract contract = new Contract(entityUuid, entityType, entityName, position, dimension);
         
         // 为契约添加对应的效果
@@ -61,6 +83,8 @@ public class ContractManager {
         
         contracts.put(entityUuid, contract);
         markForSave();
+        
+        System.out.println("[BLACKSOULS] Contract created on server for entity: " + entityName);
     }
     
     /**
@@ -101,6 +125,43 @@ public class ContractManager {
     }
     
     /**
+     * 清空所有契约（用于网络同步）
+     */
+    public void clearContracts() {
+        // 停用所有契约效果
+        for (Contract contract : contracts.values()) {
+            contract.deactivateEffects(owner);
+        }
+        contracts.clear();
+    }
+    
+    /**
+     * 从网络添加契约（用于客户端同步）
+     */
+    public void addContractFromNetwork(Contract contract) {
+        // 确保契约有对应的效果
+        if (contract.getEffects().isEmpty()) {
+            // 如果契约没有效果，从注册表获取对应实体类型的效果
+            addEffectsToContract(contract, contract.getEntityType());
+        }
+        
+        contracts.put(contract.getEntityId(), contract);
+        // 不标记保存，因为这是从服务器同步的数据
+    }
+    
+    /**
+     * 从网络更新契约（用于客户端同步）
+     */
+    public void updateContractFromNetwork(Contract contract) {
+        Contract existing = contracts.get(contract.getEntityId());
+        if (existing != null) {
+            // 更新位置信息
+            existing.setEntityPosition(contract.getEntityPosition());
+            existing.setTracking(contract.isTracking());
+        }
+    }
+    
+    /**
      * 为契约添加对应的效果
      */
     private void addEffectsToContract(Contract contract, String entityType) {
@@ -108,6 +169,8 @@ public class ContractManager {
         List<ContractEffect> effects = ContractEffectRegistry.getInstance().getEffectsForEntityType(entityType);
         
         for (ContractEffect effect : effects) {
+            // 在添加效果前设置契约目标名称
+            effect.getEffectData().putString("contractEntityName", contract.getEntityName());
             contract.addEffect(effect);
         }
         
@@ -126,6 +189,12 @@ public class ContractManager {
      * 定期保存检查
      */
     public void tick() {
+        // 关键修复：检查玩家状态，避免在玩家死亡或无效状态下执行
+        if (owner == null || !owner.isAlive() || owner.level() == null) {
+            // 玩家死亡或无效，跳过tick执行
+            return;
+        }
+        
         if (needsSave && System.currentTimeMillis() - lastSaveTime > SAVE_INTERVAL_MS) {
             saveToFile();
         }
@@ -138,6 +207,11 @@ public class ContractManager {
      * 更新所有契约效果
      */
     private void updateContractEffects() {
+        // 关键修复：检查玩家状态，避免在玩家死亡或无效状态下执行
+        if (owner == null || !owner.isAlive() || owner.level() == null) {
+            return;
+        }
+        
         for (Contract contract : contracts.values()) {
             contract.tickEffects(owner);
         }
@@ -147,6 +221,12 @@ public class ContractManager {
      * 从文件加载契约数据
      */
     private void loadFromFile() {
+        // 检查是否在服务器端执行
+        if (owner == null || owner.level() == null || owner.level().isClientSide()) {
+            System.out.println("[BLACKSOULS] Warning: Attempted to load contract data on client side");
+            return;
+        }
+        
         if (!saveFile.exists()) {
             return;
         }
@@ -163,6 +243,13 @@ public class ContractManager {
                         contracts.put(contract.getEntityId(), contract);
                     }
                 }
+                
+                // 关键修复：加载契约数据后，重新激活之前已激活的契约效果
+                // 这解决了进入游戏时需要重新开关契约的问题
+                if (owner != null && owner.isAlive()) {
+                    reactivateActiveEffects(owner);
+                    System.out.println("[BLACKSOULS] Previously active contract effects reactivated after loading: " + owner.getScoreboardName());
+                }
             }
         } catch (IOException e) {
             System.err.println("Failed to load contracts from file: " + saveFile.getAbsolutePath());
@@ -174,6 +261,12 @@ public class ContractManager {
      * 保存契约数据到文件
      */
     public void saveToFile() {
+        // 检查是否在服务器端执行
+        if (owner == null || owner.level() == null || owner.level().isClientSide()) {
+            System.out.println("[BLACKSOULS] Warning: Attempted to save contract data on client side");
+            return;
+        }
+        
         try {
             CompoundTag rootTag = new CompoundTag();
             ListTag contractsList = new ListTag();
@@ -187,6 +280,7 @@ public class ContractManager {
             
             this.needsSave = false;
             this.lastSaveTime = System.currentTimeMillis();
+            System.out.println("[BLACKSOULS] Contract data saved on server for player: " + owner.getScoreboardName());
         } catch (IOException e) {
             System.err.println("Failed to save contracts to file: " + saveFile.getAbsolutePath());
             e.printStackTrace();
@@ -221,6 +315,17 @@ public class ContractManager {
     }
     
     /**
+     * 重新激活之前已激活的契约效果（不激活未激活的契约）
+     */
+    public void reactivateActiveEffects(Player player) {
+        for (Contract contract : contracts.values()) {
+            // 只重新激活之前已激活的契约效果
+            contract.reactivateActiveEffects(player);
+        }
+        System.out.println("[BLACKSOULS] Previously active contract effects reactivated for player: " + player.getScoreboardName());
+    }
+    
+    /**
      * 获取所有契约
      */
     public Collection<Contract> getAllContracts() {
@@ -232,6 +337,13 @@ public class ContractManager {
      */
     public int getContractCount() {
         return contracts.size();
+    }
+    
+    /**
+     * 获取契约所有者（玩家）
+     */
+    public Player getOwner() {
+        return owner;
     }
     
     /**
@@ -263,10 +375,6 @@ public class ContractManager {
                                 if (owner.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
                                     // 服务器端：通过UUID获取实体
                                     entity = serverLevel.getEntity(contract.getEntityId());
-                                } else {
-                                    // 客户端：使用更通用的方法获取实体
-                                    // 注意：在客户端，可能需要使用其他方式获取实体
-                                    // 这里简化处理，主要依赖实体移动事件来实时更新
                                 }
                                 
                                 if (entity != null) {
@@ -335,12 +443,185 @@ public class ContractManager {
             net.minecraft.world.phys.Vec3 pos = event.getEntity().position();
             String coordinates = String.format("%.1f, %.1f, %.1f", pos.x, pos.y, pos.z);
             
+            // 解析实体名称（可能为JSON格式）
+            String entityName = contract.getEntityName();
+            Component displayName;
+            try {
+                // 尝试解析为JSON格式的Component
+                displayName = Component.Serializer.fromJson(entityName);
+            } catch (Exception e) {
+                // 如果不是JSON格式，直接使用字符串
+                displayName = Component.literal(entityName);
+            }
+            
             // 向玩家发送聊天消息通知目标死亡
-            owner.sendSystemMessage(Component.literal("您位于 ").append(Component.literal(coordinates).withStyle(style -> style.withBold(true)))
-                .append(" 的契约对象【").append(Component.literal(event.getEntity().getName().getString()).withStyle(style -> style.withBold(true)))
-                .append("】已死亡，契约消失"));
+            owner.sendSystemMessage(Component.literal("§c您位于 ").append(Component.literal(coordinates).withStyle(ChatFormatting.BOLD))
+                .append("§c 的契约对象【").append(displayName.copy().withStyle(ChatFormatting.BOLD))
+                .append("§c】已死亡，契约消失"));
             
             // 标记需要保存
+            markForSave();
+        }
+    }
+    
+    /**
+     * 检查并移除实体已消失的契约
+     * 当契约对象被捕捉类模组变成物品或其他方式消失时调用
+     * 注意：区块卸载或跨维度时实体只是暂时不可访问，不会移除契约
+     */
+    public void checkAndRemoveVanishedEntityContracts() {
+        if (owner.level() == null) {
+            return;
+        }
+        
+        List<UUID> contractsToRemove = new ArrayList<>();
+        
+        for (Contract contract : contracts.values()) {
+            UUID entityId = contract.getEntityId();
+            
+            // 检查实体是否仍然存在
+            boolean entityExists = false;
+            
+            // 尝试在当前维度中通过UUID查找实体
+            try {
+                // 使用正确的方式通过UUID获取实体
+                Entity entity = null;
+                if (owner.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                    // 服务器端：通过UUID获取实体
+                    entity = serverLevel.getEntity(entityId);
+                }
+                
+                if (entity != null) {
+                    entityExists = true;
+                    // 如果实体存在，重置跨维度检测状态
+                    contract.setLastCrossDimensionCheckTime(0);
+                } else {
+                    // 实体在当前维度不存在，检查是否是跨维度或区块卸载导致的暂时不可访问
+                    
+                    // 首先检查实体是否在其他维度存在
+                    boolean entityExistsInOtherDimension = false;
+                    net.minecraft.server.level.ServerLevel entityLevel = null;
+                    
+                    if (owner.level() instanceof net.minecraft.server.level.ServerLevel currentServerLevel) {
+                        net.minecraft.server.MinecraftServer server = currentServerLevel.getServer();
+                        if (server != null) {
+                            // 检查所有维度中是否存在该实体
+                            for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
+                                Entity foundEntity = level.getEntity(entityId);
+                                if (foundEntity != null) {
+                                    entityExistsInOtherDimension = true;
+                                    entityLevel = level;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (entityExistsInOtherDimension) {
+                        // 实体在其他维度存在，只是跨维度了
+                        long currentTime = System.currentTimeMillis();
+                        long lastCheckTime = contract.getLastCrossDimensionCheckTime();
+                        
+                        // 如果是第一次检测到跨维度，或者距离上次检测超过30秒，才记录日志
+                        if (lastCheckTime == 0 || currentTime - lastCheckTime > 30000) {
+                            //System.out.println("契约对象在其他维度存在（跨维度），保持契约: " + contract.getEntityName());
+                            contract.setLastCrossDimensionCheckTime(currentTime);
+                        }
+                        
+                        // 更新实体位置信息（如果实体在其他维度）
+                        if (entityLevel != null) {
+                            Entity foundEntity = entityLevel.getEntity(entityId);
+                            if (foundEntity != null) {
+                                contract.setEntityPosition(foundEntity.position());
+                                markForSave();
+                            }
+                        }
+                    } else {
+                        // 实体在所有维度都不存在，检查是否是区块卸载导致的暂时不可访问
+                        // 获取契约实体的区块坐标
+                        Vec3 posVec = contract.getEntityPosition();
+                        BlockPos entityPos = BlockPos.containing(posVec);
+                        if (entityPos != null) {
+                            int chunkX = entityPos.getX() >> 4; // 转换为区块坐标 X
+                            int chunkZ = entityPos.getZ() >> 4; // 转换为区块坐标 Z
+                            
+                            // 检查实体所在区块是否已加载（在实体原始维度中检查）
+                            String contractDimension = contract.getDimension();
+                            boolean chunkLoaded = false;
+                            
+                            if (owner.level() instanceof net.minecraft.server.level.ServerLevel currentServerLevel) {
+                                net.minecraft.server.MinecraftServer server = currentServerLevel.getServer();
+                                if (server != null) {
+                                    // 在实体原始维度中检查区块加载状态
+                                    for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
+                                        if (level.dimension().location().toString().equals(contractDimension)) {
+                                            chunkLoaded = level.hasChunk(chunkX, chunkZ);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (chunkLoaded) {
+                                // 区块已加载但实体在所有维度都不存在，说明实体真正消失了
+                                // 这可能是被捕捉类模组变成物品或其他方式移除
+                                //System.out.println("检测到契约对象真正消失（区块已加载但实体不存在），移除契约: " + contract.getEntityName());
+                                contractsToRemove.add(entityId);
+                            } else {
+                                // 区块未加载，实体只是暂时不可访问，不移除契约
+                                //System.out.println("契约对象所在区块未加载，保持契约: " + contract.getEntityName());
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // 忽略任何异常，保持原位置信息
+                // 这是为了避免在访问受限或出现问题时导致崩溃
+                System.out.println("检查实体存在性时发生异常，保持契约: " + contract.getEntityName());
+            }
+        }
+        
+        // 移除已消失实体的契约
+        for (UUID entityId : contractsToRemove) {
+            Contract contract = contracts.get(entityId);
+            if (contract != null) {
+                // 停用契约效果
+                contract.deactivateEffects(owner);
+                
+                // 移除契约
+                contracts.remove(entityId);
+                
+                // 获取最后的坐标
+                Vec3 lastPos = contract.getEntityPosition();
+                String coordinates = String.format("%.1f, %.1f, %.1f", lastPos.x, lastPos.y, lastPos.z);
+                
+                // 解析实体名称（可能为JSON格式）
+                String entityName = contract.getEntityName();
+                Component displayName;
+                try {
+                    // 尝试解析为JSON格式的Component
+                    displayName = Component.Serializer.fromJson(entityName);
+                } catch (Exception e) {
+                    // 如果不是JSON格式，直接使用字符串
+                    displayName = Component.literal(entityName);
+                }
+                
+                // 向玩家发送通知，附带最后的坐标
+                owner.sendSystemMessage(Component.literal("§c您位于 ").append(Component.literal(coordinates).withStyle(ChatFormatting.BOLD))
+                    .append("§c 的契约对象【").append(displayName.copy().withStyle(ChatFormatting.BOLD))
+                    .append("§c】已消失或跨纬度传送发生意外，契约自动解除"));
+                
+                // 向客户端发送契约删除通知（仅在服务器端执行）
+                if (owner.level() != null && !owner.level().isClientSide() && owner instanceof net.minecraft.server.level.ServerPlayer) {
+                    ContractNetworkHandler.broadcastContractUpdate((net.minecraft.server.level.ServerPlayer) owner);
+                }
+                
+                //System.out.println("已移除消失实体的契约: " + contract.getEntityName());
+            }
+        }
+        
+        // 如果有契约被移除，标记需要保存
+        if (!contractsToRemove.isEmpty()) {
             markForSave();
         }
     }

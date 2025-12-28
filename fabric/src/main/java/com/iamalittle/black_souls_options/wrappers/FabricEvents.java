@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.common.Events;
 import com.iamalittle.black_souls_options.common.events.RenderWorldLastEvent;
 import com.iamalittle.black_souls_options.contracts.effects.mobs.AxolotlContract;
 import com.iamalittle.black_souls_options.controllers.TargetEntityScreen;
+import com.iamalittle.black_souls_options.events.FabricPlayerDeathEventHandler;
 import com.iamalittle.black_souls_options.fabric.ContractEventsFabric;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -93,5 +94,11 @@ public class FabricEvents {
         
         // 初始化契约事件处理器
         ContractEventsFabric.initialize();
+        
+        // 初始化死亡图腾事件处理器
+        FabricPlayerDeathEventHandler.initialize();
+        
+        // 初始化死亡图腾数据事件处理器
+        com.iamalittle.black_souls_options.fabric.DeathTotemEventsFabric.initialize();
     }
 }

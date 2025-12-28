@@ -18,6 +18,11 @@ public class PlayerCanBeSeenAsEnemyMixin {
     private void modifyCanBeSeenAsEnemy(CallbackInfoReturnable<Boolean> cir) {
         Player player = (Player) (Object) this;
         
+        // 检查玩家是否正在装死
+        if (AxolotlContract.isPlayerFeigningDeath(player)) {
+            // 让敌对生物无法将玩家视为敌人
+            cir.setReturnValue(false);
+        }
 
     }
 }

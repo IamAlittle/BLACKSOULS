@@ -83,5 +83,23 @@ public class ContractSystem {
         for (ContractManager manager : globalManager.getAllContractManagers()) {
             manager.updateAllEntityPositions();
         }
+        
+        // 检查并移除实体已消失的契约（每5秒检查一次）
+        if (System.currentTimeMillis() % 5000 < UPDATE_INTERVAL_MS) {
+            checkVanishedEntityContracts();
+        }
+    }
+    
+    /**
+     * 检查并移除实体已消失的契约
+     */
+    private void checkVanishedEntityContracts() {
+        // 获取全局契约管理器
+        GlobalContractManager globalManager = GlobalContractManager.getInstance();
+        
+        // 遍历所有玩家的契约管理器并检查消失的实体
+        for (ContractManager manager : globalManager.getAllContractManagers()) {
+            manager.checkAndRemoveVanishedEntityContracts();
+        }
     }
 }

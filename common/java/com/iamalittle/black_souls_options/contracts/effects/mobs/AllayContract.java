@@ -32,11 +32,18 @@ public class AllayContract extends ContractEffect {
     }
     
     @Override
-    protected void onActivate(Player player) {
+    protected void onActivate(Player player, boolean sendMessage) {
         if (player != null) {
             // 激活时应用拾取范围提升效果
             applyPickupRangeBoost(player);
-            sendActivationMessage(player);
+            // 使用契约目标名称发送消息（仅在需要时发送）
+            if (sendMessage) {
+                String entityName = effectData.getString("contractEntityName");
+                if (entityName.isEmpty()) {
+                    entityName = displayName; // 回退到效果名称
+                }
+                sendActivationMessage(player, entityName);
+            }
             // 初始化最后治疗时间
             lastHealTime = System.currentTimeMillis();
         }
@@ -47,7 +54,12 @@ public class AllayContract extends ContractEffect {
         if (player != null) {
             // 停用效果时移除所有效果
             removePickupRangeBoost(player);
-            sendDeactivationMessage(player);
+            // 使用契约目标名称发送消息
+            String entityName = effectData.getString("contractEntityName");
+            if (entityName.isEmpty()) {
+                entityName = displayName; // 回退到效果名称
+            }
+            sendDeactivationMessage(player, entityName);
         }
     }
     

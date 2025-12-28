@@ -1,7 +1,9 @@
 package com.iamalittle.black_souls_options.contracts;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import com.iamalittle.black_souls_options.network.ContractNetworkHandler;
 import java.util.*;
 import java.io.File;
 
@@ -35,20 +37,54 @@ public class GlobalContractManager {
     }
     
     /**
-     * 获取玩家的契约管理器
+     * 获取玩家的契约管理器（服务器端创建，客户端可获取已存在的管理器）
      */
     public ContractManager getContractManager(Player player) {
+        if (player == null) {
+            return null;
+        }
+        
         UUID playerUuid = player.getUUID();
+        
+        // 如果已有管理器，直接返回（适用于服务器端和客户端）
+        if (playerContractManagers.containsKey(playerUuid)) {
+            return playerContractManagers.get(playerUuid);
+        }
+        
+        // 关键修复：检查是否在服务器端执行
+        if (player.level() == null || player.level().isClientSide()) {
+            // 客户端：创建只读的契约管理器用于显示数据
+            ContractManager clientManager = new ContractManager(player);
+            playerContractManagers.put(playerUuid, clientManager);
+            System.out.println("[BLACKSOULS] Client ContractManager created for player: " + player.getScoreboardName());
+            return clientManager;
+        }
+        
+        // 关键修复：检查玩家状态，避免为无效玩家创建管理器
+        if (player.level().getServer() == null) {
+            // 玩家无效，返回null或已存在的管理器（如果存在）
+            if (playerContractManagers.containsKey(playerUuid)) {
+                return playerContractManagers.get(playerUuid);
+            }
+            //System.err.println("[BLACKSOULS] Warning: Attempted to get ContractManager for invalid player");
+            return null;
+        }
         
         // 如果已有管理器，直接返回
         if (playerContractManagers.containsKey(playerUuid)) {
             return playerContractManagers.get(playerUuid);
         }
         
-        // 创建新的契约管理器
+        // 创建新的契约管理器（仅在服务器端）
         ContractManager contractManager = new ContractManager(player);
         playerContractManagers.put(playerUuid, contractManager);
         
+        // 向客户端发送契约数据同步
+        if (player instanceof ServerPlayer) {
+            ContractNetworkHandler.sendContractDataToPlayer((ServerPlayer) player, true);
+        }
+        
+        System.out.println("[BLACKSOULS] ContractManager created on server for player: " + player.getScoreboardName());
         return contractManager;
     }
     
@@ -75,7 +111,19 @@ public class GlobalContractManager {
      * 定期保存所有玩家的契约数据
      */
     public void tick() {
-        for (ContractManager manager : playerContractManagers.values()) {
+        // 使用迭代器安全地遍历，避免并发修改异常
+        Iterator<ContractManager> iterator = playerContractManagers.values().iterator();
+        while (iterator.hasNext()) {
+            ContractManager manager = iterator.next();
+            
+            // 关键修复：检查管理器中的玩家是否仍然有效
+            if (manager.getOwner() == null || !manager.getOwner().isAlive()) {
+                // 玩家已死亡或无效，移除管理器并保存数据
+                manager.forceSave();
+                iterator.remove();
+                continue;
+            }
+            
             manager.tick();
         }
     }

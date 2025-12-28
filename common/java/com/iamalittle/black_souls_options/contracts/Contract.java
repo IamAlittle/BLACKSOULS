@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec3;
 import java.util.*;
 
@@ -19,6 +20,7 @@ public class Contract {
     private long lastUpdateTime;         // 最后更新时间
     private boolean canUpdatePosition;   // 是否可以更新位置（基于区块加载状态）
     private boolean isTracking;          // 是否正在追踪该契约目标
+    private long lastCrossDimensionCheckTime; // 最后跨维度检测时间
     private final List<ContractEffect> effects; // 契约效果列表
     
     public Contract(UUID entityId, String entityType, String entityName, Vec3 position, String dimension) {
@@ -31,6 +33,7 @@ public class Contract {
         this.lastUpdateTime = creationTime;
         this.canUpdatePosition = false; // 默认不更新位置
         this.isTracking = false;        // 默认不追踪
+        this.lastCrossDimensionCheckTime = 0; // 默认未检测过跨维度
         this.effects = new ArrayList<>();
     }
     
@@ -97,6 +100,22 @@ public class Contract {
     }
     
     /**
+     * 获取最后跨维度检测时间
+     */
+    public long getLastCrossDimensionCheckTime() {
+        return lastCrossDimensionCheckTime;
+    }
+    
+    /**
+     * 设置最后跨维度检测时间
+     */
+    public void setLastCrossDimensionCheckTime(long time) {
+        this.lastCrossDimensionCheckTime = time;
+    }
+    
+
+    
+    /**
      * 获取契约效果列表
      */
     public List<ContractEffect> getEffects() {
@@ -137,11 +156,31 @@ public class Contract {
     }
     
     /**
+     * 获取契约的所有效果详细信息
+     */
+    public List<Component> getAllEffectDetails() {
+        List<Component> allDetails = new ArrayList<>();
+        for (ContractEffect effect : effects) {
+            allDetails.addAll(effect.getEffectDetails());
+        }
+        return allDetails;
+    }
+    
+    /**
      * 激活所有契约效果
      */
     public void activateEffects(net.minecraft.world.entity.player.Player player) {
+        activateEffects(player, true);
+    }
+    
+    /**
+     * 激活所有契约效果（可选择是否发送激活消息）
+     */
+    public void activateEffects(net.minecraft.world.entity.player.Player player, boolean sendMessage) {
         for (ContractEffect effect : effects) {
-            effect.activate(player);
+            // 在激活前设置效果的目标名称信息
+            effect.getEffectData().putString("contractEntityName", entityName);
+            effect.activate(player, sendMessage);
         }
     }
     
@@ -152,6 +191,28 @@ public class Contract {
         for (ContractEffect effect : effects) {
             effect.deactivate(player);
         }
+    }
+    
+    /**
+     * 重新激活之前已激活的契约效果（不激活未激活的契约）
+     * 关键修复：不再重新激活任何效果，避免玩家手动关闭后又被重新激活的问题
+     */
+    public void reactivateActiveEffects(net.minecraft.world.entity.player.Player player) {
+        // 关键修复：玩家重生时不再重新激活任何契约效果
+        // 避免玩家手动关闭效果后又被重新激活的问题
+        System.out.println("[BLACKSOULS] Contract effects reactivation skipped to prevent manual toggle issues");
+        
+        // 注释掉原有的重新激活逻辑
+        /*
+        for (ContractEffect effect : effects) {
+            // 只重新激活之前已激活的契约效果
+            if (effect.isActive()) {
+                // 在激活前设置效果的目标名称信息
+                effect.getEffectData().putString("contractEntityName", entityName);
+                effect.activate(player, false); // 重新激活时不发送消息
+            }
+        }
+        */
     }
     
     /**
@@ -179,6 +240,7 @@ public class Contract {
         tag.putLong("lastUpdateTime", lastUpdateTime);
         tag.putBoolean("canUpdatePosition", canUpdatePosition);
         tag.putBoolean("isTracking", isTracking);
+        tag.putLong("lastCrossDimensionCheckTime", lastCrossDimensionCheckTime);
         
         // 保存契约效果
         ListTag effectsList = new ListTag();
@@ -219,6 +281,9 @@ public class Contract {
         if (tag.contains("isTracking")) {
             contract.isTracking = tag.getBoolean("isTracking");
         }
+        if (tag.contains("lastCrossDimensionCheckTime")) {
+            contract.lastCrossDimensionCheckTime = tag.getLong("lastCrossDimensionCheckTime");
+        }
         
         // 加载契约效果
         if (tag.contains("effects")) {
@@ -233,7 +298,12 @@ public class Contract {
                 
                 if (effect != null) {
                     effect.loadFromNBT(effectTag);
+                    // 在添加效果前设置契约目标名称
+                    effect.getEffectData().putString("contractEntityName", entityName);
                     contract.addEffect(effect);
+                    // 关键修复：不要在NBT加载时自动重新激活效果
+                    // 激活状态应该由玩家手动控制，而不是在数据加载时自动激活
+                    // 这样可以确保玩家手动关闭的效果不会被错误地重新激活
                 }
             }
         }

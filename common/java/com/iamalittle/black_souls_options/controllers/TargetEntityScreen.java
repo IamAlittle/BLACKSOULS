@@ -1,5 +1,6 @@
 package com.iamalittle.black_souls_options.controllers;
 
+import com.iamalittle.black_souls_options.network.ContractNetworkHandler;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -708,9 +709,8 @@ public class TargetEntityScreen extends Screen {
                     if (selectedOptionIndex == 0) {
                         // 第二次点击相同选项，确认选择
                         confirmedOptionIndex = 0;
-                        // 创建契约
+                        // 创建契约 - 发送网络请求到服务器
                             if (targetEntity != null) {
-                                ContractManager contractManager = GlobalContractManager.getInstance().getContractManager(Minecraft.getInstance().player);
                                 // 从实体中提取所需信息创建契约
                                 UUID entityId = targetEntity.getUUID();
                                 ResourceLocation entityTypeKey = BuiltInRegistries.ENTITY_TYPE.getKey(targetEntity.getType());
@@ -737,7 +737,8 @@ public class TargetEntityScreen extends Screen {
                                 Vec3 position = targetEntity.position();
                                 String dimension = targetEntity.level().dimension().location().toString();
                                 
-                                contractManager.createContract(entityId, entityType, entityName, position, dimension);
+                                // 发送契约创建请求到服务器
+                                ContractNetworkHandler.sendContractCreateRequest(entityId, entityType, entityName, position, dimension);
                             }
                         // 关闭界面
                         this.onClose();

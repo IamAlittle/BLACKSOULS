@@ -3,15 +3,23 @@ package com.iamalittle.black_souls_options.fabric;
 import com.iamalittle.black_souls_options.common.Events;
 import com.iamalittle.black_souls_options.contracts.GlobalContractManager;
 import com.iamalittle.black_souls_options.contracts.ContractSyncManager;
+import com.iamalittle.black_souls_options.contracts.ContractManager;
+import com.iamalittle.black_souls_options.contracts.Contract;
 import com.iamalittle.black_souls_options.contracts.effects.mobs.AxolotlContract;
+import com.iamalittle.black_souls_options.contracts.effects.mobs.CreeperContract;
+import com.iamalittle.black_souls_options.contracts.effects.mobs.GlowSquidContract;
+import com.iamalittle.black_souls_options.contracts.effects.AttackEventHandler;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 
 /**
  * Fabric版本的契约事件处理器
@@ -40,6 +48,9 @@ public class ContractEventsFabric {
         
         // 玩家退出游戏时移除契约管理器并保存数据
         ServerPlayConnectionEvents.DISCONNECT.register((listener, server) -> {
+            // 在移除契约管理器前，清理发光鱿鱼契约的光源方块
+            cleanupGlowSquidLightBlocks(listener.player);
+            
             GlobalContractManager.getInstance().removeContractManager(listener.player.getUUID());
             System.out.println("[BLACKSOULS] Contract manager removed for player: " + listener.player.getScoreboardName());
         });
@@ -62,6 +73,45 @@ public class ContractEventsFabric {
                 }
             }
         });
+        
+        // 玩家攻击事件处理
+        AttackEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+            if (!world.isClientSide() && player instanceof ServerPlayer) {
+                // 处理攻击事件
+                AttackEventHandler.onPlayerAttack((ServerPlayer) player, entity);
+            }
+            return InteractionResult.PASS;
+        });
+        
+        // 玩家死亡事件处理
+        ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
+            if (entity instanceof ServerPlayer) {
+                ServerPlayer player = (ServerPlayer) entity;
+                // 检查玩家是否死亡（实体卸载且不是活着状态）
+                if (!player.isAlive()) {
+                    ContractManager manager = GlobalContractManager.getInstance().getContractManager(player);
+                    if (manager != null) {
+                            // 检查是否有激活的苦力怕契约效果，如果有则触发自爆效果
+                            boolean hasActiveCreeperContract = manager.getAllContracts().stream()
+                                .anyMatch(contract -> "minecraft:creeper".equals(contract.getEntityType()) && 
+                                    contract.getEffects().stream().anyMatch(effect -> effect.isActive()));
+                            
+                            if (hasActiveCreeperContract) {
+                                // 触发苦力怕契约的自爆效果
+                                CreeperContract creeperContract = new CreeperContract();
+                                creeperContract.onPlayerDeath(player);
+                            }
+                            
+                            // 停用所有契约效果
+                            for (Contract contract : manager.getAllContracts()) {
+                                contract.deactivateEffects(player);
+                            }
+                            System.out.println("[BLACKSOULS] All contract effects deactivated on player death: " + player.getScoreboardName());
+                        }
+                }
+            }
+        });
+
     }
     
     private static void onServerStarting(MinecraftServer server) {
@@ -76,5 +126,19 @@ public class ContractEventsFabric {
     
     private static void onServerTick(MinecraftServer server) {
         GlobalContractManager.getInstance().tick();
+    }
+    
+    /**
+     * 清理玩家发光鱿鱼契约的光源方块
+     * 在玩家离开服务器时调用，防止光源方块遗留
+     */
+    private static void cleanupGlowSquidLightBlocks(Player player) {
+        if (player == null || player.level().isClientSide()) {
+            return;
+        }
+        
+        // 调用发光鱿鱼契约的清理方法
+        GlowSquidContract.cleanupPlayerLightBlocks(player);
+        System.out.println("[BLACKSOULS] Cleaned up glow squid light blocks for player: " + player.getScoreboardName());
     }
 }

@@ -7,6 +7,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.network.chat.Component;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,14 +21,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class PlayerInteractionMixin {
 
     /**
-     * Prevent attacking when feigning death
+     * Prevent attacking when feigning death and add blaze contract ignite effect
      */
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
     private void preventAttack(Entity target, CallbackInfo ci) {
         Player player = (Player) (Object) this;
-
-
+        
+        // 检查玩家是否正在装死
+        if (AxolotlContract.isPlayerFeigningDeath(player)) {
+            // 取消攻击动作
+            ci.cancel();
+            player.displayClientMessage(Component.literal("§c装死时无法攻击！"), true);
+        }
     }
+
+
 
     /**
      * Prevent using items when feigning death
@@ -35,6 +43,13 @@ public class PlayerInteractionMixin {
     @Inject(method = "interactOn", at = @At("HEAD"), cancellable = true)
     private void preventItemUse(Entity entity, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         Player player = (Player) (Object) this;
+        
+        // 检查玩家是否正在装死
+        if (AxolotlContract.isPlayerFeigningDeath(player)) {
+            // 取消物品使用动作
+            cir.setReturnValue(InteractionResult.PASS);
+            player.displayClientMessage(Component.literal("§c装死时无法使用物品！"), true);
+        }
 
     }
 
@@ -44,6 +59,13 @@ public class PlayerInteractionMixin {
     @Inject(method = "eat", at = @At("HEAD"), cancellable = true)
     private void preventEating(Level level, ItemStack itemStack, CallbackInfoReturnable<ItemStack> cir) {
         Player player = (Player) (Object) this;
+        
+        // 检查玩家是否正在装死
+        if (AxolotlContract.isPlayerFeigningDeath(player)) {
+            // 取消进食动作
+            cir.setReturnValue(itemStack);
+            player.displayClientMessage(Component.literal("§c装死时无法进食！"), true);
+        }
 
     }
 }

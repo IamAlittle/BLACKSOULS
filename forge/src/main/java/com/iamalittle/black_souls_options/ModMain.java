@@ -1,9 +1,12 @@
 package com.iamalittle.black_souls_options;
 
 import com.iamalittle.black_souls_options.controllers.TargetEntityScreen;
+import com.iamalittle.black_souls_options.contracts.ContractSystem;
+import com.iamalittle.black_souls_options.input.ContractAbilityKeyManager;
 import com.iamalittle.black_souls_options.render.ContractTrackerRenderer;
 import com.iamalittle.black_souls_options.wrappers.ForgeEvents;
 import com.iamalittle.black_souls_options.forge.ContractEventsForge;
+import com.iamalittle.black_souls_options.forge.network.ForgeContractNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Items;
@@ -35,10 +38,17 @@ public class ModMain {
 		@SubscribeEvent
 		public static void onClientSetup(FMLClientSetupEvent event) {
 			ContractTrackerRenderer.setup();
+			
+			// 初始化契约系统，启动定时更新器
+			ContractSystem.getInstance();
+			
+			// 注册网络处理器
+			ForgeContractNetwork.initialize();
 		}
 
 		@SubscribeEvent
 		public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
+			event.register(ContractAbilityKeyManager.CONTRACT_ABILITY_KEY);
 		}
 	}
 	
@@ -51,6 +61,16 @@ public class ModMain {
 					if (event.getEntity().getItemBySlot(EquipmentSlot.HEAD).getItem() == Items.IRON_HELMET) {
 						Minecraft.getInstance().setScreen(new TargetEntityScreen(event.getTarget()));
 					}
+			}
+		}
+		
+		@SubscribeEvent
+		public static void onClientTick(net.minecraftforge.event.TickEvent.ClientTickEvent event) {
+			if (event.phase == net.minecraftforge.event.TickEvent.Phase.END) {
+				Minecraft minecraft = Minecraft.getInstance();
+				if (minecraft.player != null) {
+					ContractAbilityKeyManager.updateKeyState();
+				}
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 package com.iamalittle.black_souls_options.contracts.effects;
 
 import com.iamalittle.black_souls_options.contracts.effects.mobs.RabbitJumpBoostEffect;
+import com.iamalittle.black_souls_options.contracts.effects.mobs.GhastContract;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 
@@ -15,11 +16,15 @@ public class ContractEffectRegistry {
     static {
         // 注册效果类
         registerEffectClass("rabbit_jump_boost", RabbitJumpBoostEffect.class);
+        registerEffectClass("ghast_contract", GhastContract.class);
         
         // 注册实体类型对应的效果
         try {
             EntityType<?> rabbit = EntityType.RABBIT;
             registerEffectsForEntityType(rabbit, Arrays.asList("rabbit_jump_boost"));
+            
+            EntityType<?> ghast = EntityType.GHAST;
+            registerEffectsForEntityType(ghast, Arrays.asList("ghast_contract"));
         } catch (Exception e) {
             System.err.println("Failed to register rabbit entity type effects: " + e.getMessage());
         }
@@ -78,6 +83,8 @@ public class ContractEffectRegistry {
         switch (effectId) {
             case "rabbit_jump_boost":
                 return "Rabbit Jump Boost";
+            case "ghast_contract":
+                return "Ghast Contract";
             default:
                 return effectId;
         }
@@ -87,6 +94,8 @@ public class ContractEffectRegistry {
         switch (effectId) {
             case "rabbit_jump_boost":
                 return "Grants enhanced jumping ability like a rabbit";
+            case "ghast_contract":
+                return "Grants ghast-like abilities";
             default:
                 return "Unknown effect";
         }

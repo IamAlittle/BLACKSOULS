@@ -17,6 +17,11 @@ public class MixinBlockItem {
      */
     @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
     private void preventBlockPlacement(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
-
+        // 检查玩家是否正在装死
+        if (context.getPlayer() != null && AxolotlContract.isPlayerFeigningDeath(context.getPlayer())) {
+            // 取消放置方块的动作
+            cir.setReturnValue(InteractionResult.PASS);
+            context.getPlayer().displayClientMessage(net.minecraft.network.chat.Component.literal("§c装死时无法放置方块！"), true);
+        }
     }
 }

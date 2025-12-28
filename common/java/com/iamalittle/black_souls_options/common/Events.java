@@ -38,13 +38,24 @@ public class Events {
     
     public static class EntityDeathEvent {
         private final Entity entity;
+        private final net.minecraft.world.damagesource.DamageSource damageSource;
         
         public EntityDeathEvent(Entity entity) {
             this.entity = entity;
+            this.damageSource = null;
+        }
+        
+        public EntityDeathEvent(Entity entity, net.minecraft.world.damagesource.DamageSource damageSource) {
+            this.entity = entity;
+            this.damageSource = damageSource;
         }
         
         public Entity getEntity() {
             return entity;
+        }
+        
+        public net.minecraft.world.damagesource.DamageSource getDamageSource() {
+            return damageSource;
         }
     }
 }

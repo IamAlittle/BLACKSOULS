@@ -20,10 +20,19 @@ public class PlayerVisibilityMixin {
      * This is similar to how invisibility effect works in Minecraft
      */
     @Inject(method = "getVisibilityPercent", at = @At("HEAD"), cancellable = true)
-    private void modifyVisibilityPercent( CallbackInfoReturnable<Float> cir) {
+    private void modifyVisibilityPercent( CallbackInfoReturnable<Double> cir) {
         // Get the actual LivingEntity instance being mixed into
         LivingEntity entity = (LivingEntity) (Object) this;
         
-
+        // Only apply to Player entities
+        if (entity instanceof Player) {
+            Player player = (Player) entity;
+            
+            // Check if the player is currently feigning death
+            if (AxolotlContract.isPlayerFeigningDeath(player)) {
+                // 大幅降低可见度，让敌对生物忽略玩家
+                cir.setReturnValue(0.1d); // 10%可见度
+            }
+        }
     }
 }

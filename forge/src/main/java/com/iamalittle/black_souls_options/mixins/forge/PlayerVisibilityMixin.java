@@ -29,7 +29,10 @@ public class PlayerVisibilityMixin {
             Player player = (Player) entity;
             
             // Check if the player is currently feigning death
-
+            if (AxolotlContract.isPlayerFeigningDeath(player)) {
+                // 大幅降低可见度，让敌对生物忽略玩家
+                cir.setReturnValue(0.1d); // 10%可见度
+            }
         }
     }
 }

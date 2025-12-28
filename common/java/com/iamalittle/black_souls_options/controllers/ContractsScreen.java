@@ -7,12 +7,14 @@ import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,9 +29,11 @@ public class ContractsScreen extends Screen {
     private Contract selectedContract;
     private Button trackButton;
     private Button deleteButton;
+    private EditBox searchBox;
     private int scrollOffset;
     private int maxVisibleItems;
     private int effectDetailsScrollOffset; // 效果详情区域滚动偏移量
+    private String searchFilter = ""; // 搜索过滤条件
     
     public ContractsScreen() {
         super(Component.literal("契约列表"));
@@ -49,11 +53,26 @@ public class ContractsScreen extends Screen {
         // 更新契约列表
         updateContractList();
         
+        // 添加搜索框（在左下角，与关闭按钮齐平）
+        int searchBoxWidth = 100;
+        int searchBoxHeight = 16;
+        int searchBoxX = 20; // 左侧对齐
+        int searchBoxY = this.height - 30; // 与关闭按钮齐平
+
+        this.searchBox = new EditBox(this.font, searchBoxX, searchBoxY, searchBoxWidth, searchBoxHeight, 
+            Component.literal(""));
+        this.searchBox.setHint(Component.literal("搜索契约..."));
+        this.searchBox.setResponder(text -> {
+            this.searchFilter = text.trim();
+            updateContractList(); // 更新列表以应用过滤
+        });
+        this.addRenderableWidget(this.searchBox);
+        
         // 添加关闭按钮
         int buttonWidth = 100;
         int buttonHeight = 20;
         int buttonX = (this.width - buttonWidth) / 2;
-        int buttonY = this.height - 40;
+        int buttonY = this.height - 30;
         
         Button closeButton = Button.builder(
             Component.literal("关闭"),
@@ -78,7 +97,7 @@ public class ContractsScreen extends Screen {
         this.deleteButton = Button.builder(
             Component.literal("删除目标"),
             button -> {
-                if (selectedContract != null) {
+                if (selectedContract != null && contractManager != null) {
                     contractManager.removeContract(selectedContract.getEntityId());
                     updateContractList();
                     selectedContract = null;
@@ -110,7 +129,12 @@ public class ContractsScreen extends Screen {
         }
         
         // 绘制契约列表标题（合并为一个标题，删除红色主标题）
-        String titleText = "契约列表 (" + sortedContracts.size() + "/" + contractManager.getContractCount() + ")";
+        String titleText;
+        if (contractManager != null) {
+            titleText = "契约列表 (" + sortedContracts.size() + "/" + contractManager.getContractCount() + ")";
+        } else {
+            titleText = "契约列表 (" + sortedContracts.size() + "/0)";
+        }
         guiGraphics.drawString(
             this.font,
             titleText,
@@ -417,9 +441,13 @@ public class ContractsScreen extends Screen {
                         if (effect.isActive()) {
                             // 停用效果
                             effect.deactivate(Minecraft.getInstance().player);
+                            // 关键修复：向服务器发送状态同步请求
+                            com.iamalittle.black_souls_options.network.ContractNetworkHandler.sendEffectToggleRequest(contract.getEntityId(), false);
                         } else {
-                            // 激活效果
-                            effect.activate(Minecraft.getInstance().player);
+                            // 激活效果（玩家点击开关时发送消息）
+                            effect.activate(Minecraft.getInstance().player, true);
+                            // 关键修复：向服务器发送状态同步请求
+                            com.iamalittle.black_souls_options.network.ContractNetworkHandler.sendEffectToggleRequest(contract.getEntityId(), true);
                         }
                     }
                     return true;
@@ -435,7 +463,12 @@ public class ContractsScreen extends Screen {
                     mouseY >= deleteBtnY && mouseY <= deleteBtnY + deleteBtnHeight) {
                     // 点击了删除按钮
                     Contract contract = sortedContracts.get(clickedIndex);
+                    
+                    // 在客户端删除契约
                     contractManager.removeContract(contract.getEntityId());
+                    
+                    // 向服务器发送删除请求
+                    com.iamalittle.black_souls_options.network.ContractNetworkHandler.sendContractDeleteRequest(contract.getEntityId());
                     
                     // 如果删除的是当前选中的契约，清除选中状态
                     if (contract == selectedContract) {
@@ -510,7 +543,54 @@ public class ContractsScreen extends Screen {
     private void updateContractList() {
         if (contractManager != null) {
             sortedContracts.clear();
-            sortedContracts.addAll(contractManager.getAllContracts());
+            
+            // 获取所有契约
+            Collection<Contract> allContracts = contractManager.getAllContracts();
+            
+            // 应用搜索过滤
+            if (searchFilter != null && !searchFilter.isEmpty()) {
+                for (Contract contract : allContracts) {
+                    // 检查契约名称是否匹配
+                    boolean nameMatches = contract.getEntityName().toLowerCase().contains(searchFilter.toLowerCase());
+                    
+                    // 检查契约效果详细信息是否匹配
+                    boolean effectMatches = false;
+                    List<ContractEffect> effects = contract.getEffects();
+                    for (ContractEffect effect : effects) {
+                        // 检查效果名称
+                        if (effect.getDisplayName().toLowerCase().contains(searchFilter.toLowerCase())) {
+                            effectMatches = true;
+                            break;
+                        }
+                        
+                        // 检查效果描述
+                        if (effect.getDescription().toLowerCase().contains(searchFilter.toLowerCase())) {
+                            effectMatches = true;
+                            break;
+                        }
+                        
+                        // 检查效果详细信息
+                        List<Component> effectDetails = effect.getEffectDetails();
+                        for (Component detail : effectDetails) {
+                            if (detail.getString().toLowerCase().contains(searchFilter.toLowerCase())) {
+                                effectMatches = true;
+                                break;
+                            }
+                        }
+                        
+                        if (effectMatches) break;
+                    }
+                    
+                    // 如果名称或效果匹配，则添加到列表中
+                    if (nameMatches || effectMatches) {
+                        sortedContracts.add(contract);
+                    }
+                }
+            } else {
+                // 没有搜索过滤，添加所有契约
+                sortedContracts.addAll(allContracts);
+            }
+            
             // 按创建时间排序
             sortedContracts.sort((c1, c2) -> Long.compare(c2.getCreationTime(), c1.getCreationTime()));
             
@@ -554,7 +634,7 @@ public class ContractsScreen extends Screen {
         int detailX = 20;
         int detailY = 50; // 契约详细信息下方（30+16+5=51），与上方保持5像素间隔
         int detailWidth = this.width - 40;
-        int effectDetailsHeight = 65; // 增加高度以显示详细信息
+        int effectDetailsHeight = Math.min(200, Math.max(65, calculateEffectDetailsHeight() + 20)); // 动态调整高度，最小65像素，最大200像素
         
         // 绘制效果详情区域背景
         guiGraphics.fill(detailX, detailY, detailX + detailWidth, detailY + effectDetailsHeight, 0xCC222222);

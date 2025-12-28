@@ -2,6 +2,8 @@ package com.iamalittle.black_souls_options.contracts.effects;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 import java.util.List;
 
@@ -65,9 +67,18 @@ public abstract class ContractEffect {
      * @param player 玩家
      */
     public void activate(Player player) {
+        activate(player, true);
+    }
+    
+    /**
+     * 激活效果（可选择是否发送激活消息）
+     * @param player 玩家
+     * @param sendMessage 是否发送激活消息
+     */
+    public void activate(Player player, boolean sendMessage) {
         this.isActive = true;
         this.lastTickTime = System.currentTimeMillis();
-        onActivate(player);
+        onActivate(player, sendMessage);
     }
     
     /**
@@ -107,28 +118,71 @@ public abstract class ContractEffect {
     
     /**
      * 发送激活提示消息
+     * @param player 玩家
+     * @param entityName 契约目标名称
      */
-    protected void sendActivationMessage(Player player) {
+    protected void sendActivationMessage(Player player, String entityName) {
         if (player != null) {
-            String message = displayName + "契约效果激活！";
-            player.sendSystemMessage(Component.literal("§a" + message));
+            Component message = buildMessageWithColoredEntityName(entityName, "§a契约效果激活！", "§a");
+            player.sendSystemMessage(message);
         }
     }
     
     /**
      * 发送停用提示消息
+     * @param player 玩家
+     * @param entityName 契约目标名称
      */
-    protected void sendDeactivationMessage(Player player) {
+    protected void sendDeactivationMessage(Player player, String entityName) {
         if (player != null) {
-            String message = displayName + "契约效果停用";
-            player.sendSystemMessage(Component.literal("§c" + message));
+            Component message = buildMessageWithColoredEntityName(entityName, "§c契约效果停用", "§c");
+            player.sendSystemMessage(message);
         }
     }
     
     /**
-     * 效果激活时调用
+     * 构建带颜色实体名称的消息
+     * @param entityName 实体名称（可能是JSON格式或普通字符串）
+     * @param suffix 消息后缀
+     * @param messageColor 消息颜色代码
+     * @return 构建好的消息组件
      */
-    protected abstract void onActivate(Player player);
+    private Component buildMessageWithColoredEntityName(String entityName, String suffix, String messageColor) {
+        // 尝试解析JSON格式的实体名称
+        try {
+            Component entityComponent = Component.Serializer.fromJson(entityName);
+            if (entityComponent != null) {
+                // 如果是JSON格式，构建完整消息：带颜色的实体名称 + 普通颜色的后缀
+                return Component.literal("").append(entityComponent).append(Component.literal(suffix).withStyle(Component.literal("").getStyle().withColor(TextColor.parseColor(messageColor))));
+            }
+        } catch (Exception e) {
+            // JSON解析失败，使用普通字符串
+        }
+        
+        // 如果是普通字符串，直接构建消息
+        return Component.literal(entityName + suffix).withStyle(Component.literal("").getStyle().withColor(TextColor.parseColor(messageColor)));
+    }
+    
+    /**
+     * 发送激活提示消息（向后兼容，使用效果名称）
+     */
+    protected void sendActivationMessage(Player player) {
+        sendActivationMessage(player, displayName);
+    }
+    
+    /**
+     * 发送停用提示消息（向后兼容，使用效果名称）
+     */
+    protected void sendDeactivationMessage(Player player) {
+        sendDeactivationMessage(player, displayName);
+    }
+    
+    /**
+     * 效果激活时调用
+     * @param player 玩家
+     * @param sendMessage 是否发送激活消息
+     */
+    protected abstract void onActivate(Player player, boolean sendMessage);
     
     /**
      * 效果停用时调用

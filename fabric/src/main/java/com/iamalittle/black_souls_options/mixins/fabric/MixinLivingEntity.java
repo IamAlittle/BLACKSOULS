@@ -22,8 +22,8 @@ public class MixinLivingEntity {
      */
     @Inject(method = "die", at = @At("HEAD"))
     private void onDie(DamageSource damageSource, CallbackInfo ci) {
-        // Trigger our custom entity death event
-        Events.EntityDeath.trigger(new Events.EntityDeathEvent((LivingEntity)(Object)this));
+        // Trigger our custom entity death event with damage source
+        Events.EntityDeath.trigger(new Events.EntityDeathEvent((LivingEntity)(Object)this, damageSource));
     }
     
     /**
@@ -34,6 +34,15 @@ public class MixinLivingEntity {
     private void preventStartUsingItem(InteractionHand hand, CallbackInfo ci) {
         LivingEntity entity = (LivingEntity) (Object) this;
         
-
+        if (entity instanceof net.minecraft.world.entity.player.Player) {
+            net.minecraft.world.entity.player.Player player = (net.minecraft.world.entity.player.Player) entity;
+            
+            // 检查玩家是否正在装死
+            if (AxolotlContract.isPlayerFeigningDeath(player)) {
+                // 取消开始使用物品的动作
+                ci.cancel();
+                player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c装死时无法使用物品！"), true);
+            }
+        }
     }
 }

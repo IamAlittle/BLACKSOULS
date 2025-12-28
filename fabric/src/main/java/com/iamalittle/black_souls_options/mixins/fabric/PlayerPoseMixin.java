@@ -22,6 +22,13 @@ public class PlayerPoseMixin {
     private void modifyPlayerPose(CallbackInfo ci) {
         Player player = (Player) (Object) this;
         
-
+        // 检查玩家是否正在装死
+        if (AxolotlContract.isPlayerFeigningDeath(player)) {
+            // 设置玩家姿势为睡觉（躺下）
+            player.setPose(Pose.SLEEPING);
+            
+            // 取消原方法的执行，避免姿势被重置
+            ci.cancel();
+        }
     }
 }
