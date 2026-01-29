@@ -68,26 +68,29 @@ public class CreeperContract extends ContractEffect {
      * 这个方法需要在玩家死亡事件中调用
      */
     public void onPlayerDeath(Player player) {
-        if (player != null && player.level() != null) {
-            Level level = player.level();
-            Vec3 deathPos = player.position();
-            
-            // 播放苦力怕爆炸音效
-            level.playSound(null, deathPos.x, deathPos.y, deathPos.z, 
-                SoundEvents.CREEPER_PRIMED, SoundSource.HOSTILE, 1.0f, 1.0f);
-            
-            // 创建不破坏方块、不着火的爆炸
-            Explosion explosion = new Explosion(level, null, null, null, 
-                deathPos.x, deathPos.y, deathPos.z, explosionPower, false, Explosion.BlockInteraction.KEEP);
-            
-            // 执行爆炸效果
-            explosion.explode();
-            explosion.finalizeExplosion(true);
-            
-            // 播放爆炸音效
-            level.playSound(null, deathPos.x, deathPos.y, deathPos.z,
-                SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 4.0f, (1.0f + (level.random.nextFloat() - level.random.nextFloat()) * 0.2f) * 0.7f);
+        // 关键修复：检查玩家状态，避免在玩家无效状态下执行
+        if (player == null || player.level() == null) {
+            return;
         }
+        
+        Level level = player.level();
+        Vec3 deathPos = player.position();
+        
+        // 播放苦力怕爆炸音效
+        level.playSound(null, deathPos.x, deathPos.y, deathPos.z, 
+            SoundEvents.CREEPER_PRIMED, SoundSource.HOSTILE, 1.0f, 1.0f);
+        
+        // 创建不破坏方块、不着火的爆炸
+        Explosion explosion = new Explosion(level, null, null, null, 
+            deathPos.x, deathPos.y, deathPos.z, explosionPower, false, Explosion.BlockInteraction.KEEP);
+        
+        // 执行爆炸效果
+        explosion.explode();
+        explosion.finalizeExplosion(true);
+        
+        // 播放爆炸音效
+        level.playSound(null, deathPos.x, deathPos.y, deathPos.z,
+            SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 4.0f, (1.0f + (level.random.nextFloat() - level.random.nextFloat()) * 0.2f) * 0.7f);
     }
     
     @Override

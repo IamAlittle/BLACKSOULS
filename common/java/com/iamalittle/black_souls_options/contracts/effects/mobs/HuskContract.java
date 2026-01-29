@@ -1,13 +1,15 @@
 package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import java.util.*;
 
 /**
@@ -70,6 +72,10 @@ public class HuskContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
+        if (player == null || !player.isAlive() || player.level() == null) {
+            return;
+        }
+        
         // 尸壳契约不会因为晒太阳着火，所以不需要处理太阳着火逻辑
         // 继承僵尸契约的其他逻辑（如感染村民）通过攻击事件处理器处理
         // 检查是否在水中，如果在水中则受到伤害
@@ -150,8 +156,8 @@ public class HuskContract extends ContractEffect {
             
             // 播放转化音效
             serverLevel.playSound(null, villager.getX(), villager.getY(), villager.getZ(),
-                net.minecraft.sounds.SoundEvents.ZOMBIE_VILLAGER_CONVERTED, 
-                net.minecraft.sounds.SoundSource.HOSTILE, 1.0f, 1.0f);
+                SoundEvents.ZOMBIE_VILLAGER_CONVERTED, 
+                SoundSource.HOSTILE, 1.0f, 1.0f);
         }
         
         // 给攻击者发送转化消息

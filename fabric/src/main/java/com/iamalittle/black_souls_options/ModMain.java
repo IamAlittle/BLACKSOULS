@@ -2,7 +2,7 @@ package com.iamalittle.black_souls_options;
 
 import com.iamalittle.black_souls_options.controllers.TargetEntityScreen;
 import com.iamalittle.black_souls_options.contracts.ContractSystem;
-import com.iamalittle.black_souls_options.input.ContractAbilityKeyManager;
+import com.iamalittle.black_souls_options.input.SpitAbilityKeyManager;
 import com.iamalittle.black_souls_options.render.ContractTrackerRenderer;
 import com.iamalittle.black_souls_options.wrappers.FabricEvents;
 import com.iamalittle.black_souls_options.fabric.network.FabricContractNetwork;
@@ -37,13 +37,13 @@ public class ModMain implements ClientModInitializer {
 		// 注册网络处理器
 		FabricContractNetwork.initialize();
 
-		// 注册契约能力按键
-		KeyBindingHelper.registerKeyBinding(ContractAbilityKeyManager.CONTRACT_ABILITY_KEY);
+		// 注册吐口水能力按键
+		KeyBindingHelper.registerKeyBinding(SpitAbilityKeyManager.SPIT_ABILITY_KEY);
 		
 		// 注册客户端tick事件，用于更新按键状态
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (client.player != null) {
-				ContractAbilityKeyManager.updateKeyState();
+				SpitAbilityKeyManager.updateKeyState();
 			}
 		});
 

@@ -67,12 +67,29 @@ public class BatContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player != null) {
-            // 检查夜视效果是否还在，如果被其他方式移除则重新添加
-            if (batNightVisionEffect != null && !player.hasEffect(MobEffects.NIGHT_VISION)) {
-                // 夜视效果被意外移除，重新添加
-                player.addEffect(batNightVisionEffect);
-            }
+        if (player == null || !player.isAlive() || player.level() == null) return;
+
+        applyNightVisionEffect(player);
+
+    }
+    
+    /**
+     * 应用夜视效果给玩家
+     */
+    private void applyNightVisionEffect(Player player) {
+        if (player != null && player.isAlive()) {
+            // 创建新的夜视效果实例，持续时间为30秒，但会定期刷新
+            MobEffectInstance nightVision = new MobEffectInstance(
+                MobEffects.NIGHT_VISION, 
+                -1,  // 持续时间
+                0,   // 等级0
+                false, // 不显示粒子
+                false,  // 显示图标
+                false
+            );
+            
+            // 应用效果到玩家
+            player.addEffect(nightVision);
         }
     }
     
@@ -101,7 +118,7 @@ public class BatContract extends ContractEffect {
     public static boolean hasBatNightVision(Player player) {
         return nightVisionPlayers.contains(player.getUUID());
     }
-    
+
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();

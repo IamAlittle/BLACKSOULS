@@ -1,6 +1,9 @@
 package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
+import com.iamalittle.black_souls_options.contracts.ContractManagerHelper;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
+import com.iamalittle.black_souls_options.contracts.ContractManager;
+import com.iamalittle.black_souls_options.contracts.GlobalContractManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -97,7 +100,28 @@ public class FishContract extends ContractEffect {
      * 检查玩家是否拥有鱼类契约效果
      */
     public static boolean hasFishContract(Player player) {
-        return player != null && fishContractCountMap.containsKey(player.getUUID());
+        if (player == null) {
+            return false;
+        }
+        
+        // 在客户端，需要检查是否有对应的契约数据
+        if (player.level() != null && player.level().isClientSide()) {
+            // 客户端检查：通过契约管理器来验证是否有鱼类契约
+            ContractManager manager = ContractManagerHelper.getAppropriateContractManager(player);
+            if (manager != null) {
+                return manager.getAllContracts().stream()
+                    .anyMatch(contract -> {
+                        String entityType = contract.getEntityType();
+                        return "minecraft:salmon".equals(entityType) || 
+                               "minecraft:cod".equals(entityType) || 
+                               "minecraft:tropical_fish".equals(entityType);
+                    });
+            }
+            return false;
+        }
+        
+        // 服务器端：使用本地计数
+        return fishContractCountMap.containsKey(player.getUUID());
     }
     
     /**
@@ -107,20 +131,41 @@ public class FishContract extends ContractEffect {
         if (player == null) {
             return 0;
         }
+        
+        // 在客户端，需要从契约管理器获取实际的鱼类契约数量
+        if (player.level() != null && player.level().isClientSide()) {
+            ContractManager manager = ContractManagerHelper.getAppropriateContractManager(player);
+            if (manager != null) {
+                return (int) manager.getAllContracts().stream()
+                    .filter(contract -> {
+                        String entityType = contract.getEntityType();
+                        return "minecraft:salmon".equals(entityType) || 
+                               "minecraft:cod".equals(entityType) || 
+                               "minecraft:tropical_fish".equals(entityType);
+                    })
+                    .count();
+            }
+            return 0;
+        }
+        
+        // 服务器端：使用本地计数
         return fishContractCountMap.getOrDefault(player.getUUID(), 0);
+    }
+    
+    /**
+     * 重置玩家的鱼类契约计数（用于网络同步）
+     */
+    public static void resetPlayerFishContractCount(Player player) {
+        if (player != null) {
+            fishContractCountMap.remove(player.getUUID());
+        }
     }
 
     
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        // 获取当前玩家的契约层数
-        if (currentPlayer != null) {
-            int level = getFishContractLevel(currentPlayer);
-            details.add(Component.literal("§7当前层数: §a" + level));
-        } else {
-            details.add(Component.literal("§7当前层数: §a0"));
-        }
+        
         details.add(Component.literal("§7水中游泳速度提升"));
         details.add(Component.literal("§7鱼类契约效果可叠加3层"));
         return details;
@@ -128,14 +173,11 @@ public class FishContract extends ContractEffect {
     
     @Override
     public CompoundTag saveToNBT() {
-        CompoundTag nbt = super.saveToNBT();
-        // 不需要保存额外的数据，玩家的契约计数在服务器重启时会重置
-        return nbt;
+        return super.saveToNBT();
     }
     
     @Override
     public void loadFromNBT(CompoundTag nbt) {
         super.loadFromNBT(nbt);
-        // 不需要加载额外的数据，玩家的契约计数在服务器重启时会重置
     }
 }

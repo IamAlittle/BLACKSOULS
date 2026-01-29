@@ -79,7 +79,9 @@ public class DolphinContract extends ContractEffect {
     @Override
     protected void onTick(Player player) {
         // 每tick更新箱子高亮渲染
-        if (player != null && player.isAlive() && hasDolphinContract(player)) {
+        if (player == null || !player.isAlive() || player.level() == null) return;
+        
+        if (hasDolphinContract(player)) {
             if (chestHighlighter != null) {
                 chestHighlighter.update(player);
             }

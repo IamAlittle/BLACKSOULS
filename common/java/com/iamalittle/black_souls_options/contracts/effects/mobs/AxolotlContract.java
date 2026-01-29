@@ -100,16 +100,16 @@ public class AxolotlContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player != null) {
-            detectPlayerStillness(player);
+        if (player == null || !player.isAlive() || player.level() == null) return;
+        
+        detectPlayerStillness(player);
+        
+        // 如果玩家正在装死，每秒消耗1点饥饿值
+        if (isFeigningDeath) {
+            consumeHunger(player);
             
-            // 如果玩家正在装死，每秒消耗1点饥饿值
-            if (isFeigningDeath) {
-                consumeHunger(player);
-                
-                // 检查玩家是否受伤，受伤时结束装死
-                checkPlayerDamage(player);
-            }
+            // 检查玩家是否受伤，受伤时结束装死
+            checkPlayerDamage(player);
         }
     }
     
@@ -152,6 +152,15 @@ public class AxolotlContract extends ContractEffect {
      * 玩家静止不动时触发 - 开始装死
      */
     private void onPlayerStill(Player player) {
+        // 检查玩家是否在地面上（不在水中、空中或梯子上）
+        if (!isPlayerOnGround(player)) {
+            // 玩家不在陆地上，不能装死
+            if (!player.level().isClientSide) {
+                player.displayClientMessage(Component.literal("§c必须在地上才能装死！"), true);
+            }
+            return;
+        }
+        
         if (!isFeigningDeath) {
             // 开始装死
             isFeigningDeath = true;
@@ -169,6 +178,14 @@ public class AxolotlContract extends ContractEffect {
             }
             //System.out.println("[BLACKSOULS] Player " + player.getScoreboardName() + " started feigning death");
         }
+    }
+    
+    /**
+     * 检查玩家是否在地面上（不在水中、空中或梯子上）
+     */
+    private boolean isPlayerOnGround(Player player) {
+        // 检查玩家是否在陆地上（不在水中、空中或梯子上）
+        return player.onGround() && !player.isInWater() && !player.isInLava() && !player.onClimbable();
     }
     
     /**
@@ -312,6 +329,7 @@ public class AxolotlContract extends ContractEffect {
         details.add(Component.literal("§b美西螈契约效果："));
         details.add(Component.literal("§7基础契约效果"));
         details.add(Component.literal("§7- 玩家静止不动开始装死"));
+        details.add(Component.literal("§7- 必须在地上才能装死（不在水中、空中或梯子上）"));
         details.add(Component.literal("§7- 装死时每秒消耗1点饥饿值"));
         details.add(Component.literal("§7- 饥饿值掉完不会结束装死"));
         details.add(Component.literal("§7- 受伤时会强制结束装死状态"));

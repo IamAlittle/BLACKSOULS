@@ -1,5 +1,6 @@
 package com.iamalittle.black_souls_options.contracts.effects;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -63,6 +64,14 @@ public abstract class ContractEffect {
     }
     
     /**
+     * 设置激活状态（用于网络同步时设置状态而不激活效果）
+     * @param active 是否激活
+     */
+    public void setActive(boolean active) {
+        this.isActive = active;
+    }
+    
+    /**
      * 激活效果
      * @param player 玩家
      */
@@ -122,10 +131,13 @@ public abstract class ContractEffect {
      * @param entityName 契约目标名称
      */
     protected void sendActivationMessage(Player player, String entityName) {
-        if (player != null) {
-            Component message = buildMessageWithColoredEntityName(entityName, "§a契约效果激活！", "§a");
-            player.sendSystemMessage(message);
+        // 关键修复：添加更严格的空指针检查
+        if (player == null || !player.isAlive() || player.level() == null) {
+            return;
         }
+        
+        Component message = buildMessageWithColoredEntityName(entityName, "§a契约效果激活！", "§a");
+        player.sendSystemMessage(message);
     }
     
     /**
@@ -134,10 +146,13 @@ public abstract class ContractEffect {
      * @param entityName 契约目标名称
      */
     protected void sendDeactivationMessage(Player player, String entityName) {
-        if (player != null) {
-            Component message = buildMessageWithColoredEntityName(entityName, "§c契约效果停用", "§c");
-            player.sendSystemMessage(message);
+        // 关键修复：添加更严格的空指针检查
+        if (player == null || !player.isAlive() || player.level() == null) {
+            return;
         }
+        
+        Component message = buildMessageWithColoredEntityName(entityName, "§c契约效果停用", "§c");
+        player.sendSystemMessage(message);
     }
     
     /**
@@ -233,5 +248,14 @@ public abstract class ContractEffect {
      */
     public void setEffectData(CompoundTag effectData) {
         this.effectData = effectData;
+    }
+    
+    /**
+     * 客户端每tick更新效果
+     * @param MC Minecraft实例
+     * @param player 玩家
+     */
+    public void playerTick(Minecraft MC, Player player) {
+        // 默认空实现，契约效果可以选择性地实现此方法
     }
 }

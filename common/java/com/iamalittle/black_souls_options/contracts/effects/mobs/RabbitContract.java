@@ -57,12 +57,13 @@ public class RabbitContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player != null) {
-            // 每tick检查效果是否存在，如果不存在则重新应用
-            if (!player.hasEffect(MobEffects.JUMP)) {
-                applyJumpBoost(player);
-            }
+        // 关键修复：检查玩家状态，避免在玩家死亡或无效状态下执行
+        if (player == null || !player.isAlive() || player.level() == null) {
+            return;
         }
+
+            applyJumpBoost(player);
+
     }
     
     @Override
@@ -98,14 +99,6 @@ public class RabbitContract extends ContractEffect {
     private void removeJumpBoost(Player player) {
         // 移除玩家身上的跳跃提升效果
         player.removeEffect(MobEffects.JUMP);
-    }
-    
-    /**
-     * 重写tick间隔，设置为500毫秒确保效果持续存在
-     */
-    @Override
-    protected long getTickInterval() {
-        return 500;
     }
     
     /**

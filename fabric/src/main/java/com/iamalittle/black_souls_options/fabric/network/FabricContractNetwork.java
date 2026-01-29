@@ -4,6 +4,9 @@ import com.iamalittle.black_souls_options.network.ContractCreatePacket;
 import com.iamalittle.black_souls_options.network.ContractSyncPacket;
 import com.iamalittle.black_souls_options.network.EffectTogglePacket;
 import com.iamalittle.black_souls_options.network.FeignDeathSyncPacket;
+import com.iamalittle.black_souls_options.network.RandomSoundPacket;
+import com.iamalittle.black_souls_options.network.SnowballAttackPacket;
+import com.iamalittle.black_souls_options.network.SpitAttackPacket;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -19,6 +22,9 @@ public class FabricContractNetwork {
     public static final ResourceLocation CONTRACT_CREATE_PACKET_ID = new ResourceLocation("black_souls_options", "contract_create");
     public static final ResourceLocation FEIGN_DEATH_SYNC_PACKET_ID = new ResourceLocation("black_souls_options", "feign_death_sync");
     public static final ResourceLocation EFFECT_TOGGLE_PACKET_ID = new ResourceLocation("black_souls_options", "effect_toggle");
+    public static final ResourceLocation SPIT_ATTACK_PACKET_ID = new ResourceLocation("black_souls_options", "spit_attack");
+    public static final ResourceLocation RANDOM_SOUND_PACKET_ID = new ResourceLocation("black_souls_options", "random_sound");
+    public static final ResourceLocation SNOWBALL_ATTACK_PACKET_ID = new ResourceLocation("black_souls_options", "snowball_attack");
     
     /**
      * 注册网络处理器
@@ -34,6 +40,30 @@ public class FabricContractNetwork {
             ContractCreatePacket packet = new ContractCreatePacket(buf);
             server.execute(() -> {
                 com.iamalittle.black_souls_options.network.ContractNetworkHandler.handleContractCreateRequest(player, packet);
+            });
+        });
+        
+        // 服务器端注册吐口水攻击请求处理器
+        ServerPlayNetworking.registerGlobalReceiver(SPIT_ATTACK_PACKET_ID, (server, player, handler, buf, responseSender) -> {
+            SpitAttackPacket packet = new SpitAttackPacket(buf);
+            server.execute(() -> {
+                SpitAttackPacket.handle(packet, player);
+            });
+        });
+        
+        // 服务器端注册随机音效请求处理器
+        ServerPlayNetworking.registerGlobalReceiver(RANDOM_SOUND_PACKET_ID, (server, player, handler, buf, responseSender) -> {
+            RandomSoundPacket packet = new RandomSoundPacket(buf);
+            server.execute(() -> {
+                RandomSoundPacket.handle(packet, player);
+            });
+        });
+        
+        // 服务器端注册雪球攻击请求处理器
+        ServerPlayNetworking.registerGlobalReceiver(SNOWBALL_ATTACK_PACKET_ID, (server, player, handler, buf, responseSender) -> {
+            SnowballAttackPacket packet = new SnowballAttackPacket(buf);
+            server.execute(() -> {
+                SnowballAttackPacket.handle(packet, player);
             });
         });
         
@@ -82,6 +112,36 @@ public class FabricContractNetwork {
         packet.encode(buf);
         
         ClientPlayNetworking.send(CONTRACT_CREATE_PACKET_ID, buf);
+    }
+    
+    /**
+     * 客户端发送吐口水攻击请求到服务器
+     */
+    public static void sendSpitAttackRequest(SpitAttackPacket packet) {
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        packet.encode(buf);
+        
+        ClientPlayNetworking.send(SPIT_ATTACK_PACKET_ID, buf);
+    }
+    
+    /**
+     * 客户端发送随机音效请求到服务器
+     */
+    public static void sendRandomSoundRequest(RandomSoundPacket packet) {
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        packet.encode(buf);
+        
+        ClientPlayNetworking.send(RANDOM_SOUND_PACKET_ID, buf);
+    }
+    
+    /**
+     * 客户端发送雪球攻击请求到服务器
+     */
+    public static void sendSnowballAttackRequest(SnowballAttackPacket packet) {
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        packet.encode(buf);
+        
+        ClientPlayNetworking.send(SNOWBALL_ATTACK_PACKET_ID, buf);
     }
     
     /**

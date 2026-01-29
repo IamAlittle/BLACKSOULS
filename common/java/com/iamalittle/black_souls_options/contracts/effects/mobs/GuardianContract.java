@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.Collection;
 
 /**
- * 古守卫者契约效果 - 让周围一格的任何流体消失
+ * 远古守卫者契约效果 - 让周围一格的任何流体消失
  * 玩家契约古守卫者后获得的能力：
  * 1. 让玩家周围一格范围内的任何流体方块消失
  */
@@ -77,11 +77,12 @@ public class GuardianContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player != null && player.isAlive() && !player.level().isClientSide()) {
-            // 清理玩家周围的流体方块
-            clearFluidAroundPlayer(player);
-
+        if (player == null || !player.isAlive() || player.level() == null) {
+            return;
         }
+        
+        // 清理玩家周围的流体方块
+        clearFluidAroundPlayer(player);
     }
     
     /**

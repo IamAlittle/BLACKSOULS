@@ -5,6 +5,9 @@ import com.iamalittle.black_souls_options.network.ContractDeletePacket;
 import com.iamalittle.black_souls_options.network.ContractSyncPacket;
 import com.iamalittle.black_souls_options.network.EffectTogglePacket;
 import com.iamalittle.black_souls_options.network.FeignDeathSyncPacket;
+import com.iamalittle.black_souls_options.network.RandomSoundPacket;
+import com.iamalittle.black_souls_options.network.SnowballAttackPacket;
+import com.iamalittle.black_souls_options.network.SpitAttackPacket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -62,6 +65,24 @@ public class ForgeContractNetwork {
             EffectTogglePacket::encode,
             EffectTogglePacket::new,
             ForgeContractNetwork::handleEffectTogglePacket
+        );
+        
+        INSTANCE.registerMessage(packetId++, SpitAttackPacket.class,
+            SpitAttackPacket::encode,
+            SpitAttackPacket::new,
+            ForgeContractNetwork::handleSpitAttackPacket
+        );
+        
+        INSTANCE.registerMessage(packetId++, RandomSoundPacket.class,
+            RandomSoundPacket::encode,
+            RandomSoundPacket::new,
+            ForgeContractNetwork::handleRandomSoundPacket
+        );
+        
+        INSTANCE.registerMessage(packetId++, SnowballAttackPacket.class,
+            SnowballAttackPacket::encode,
+            SnowballAttackPacket::new,
+            ForgeContractNetwork::handleSnowballAttackPacket
         );
     }
     
@@ -149,6 +170,57 @@ public class ForgeContractNetwork {
     }
     
     /**
+     * 处理接收到的吐口水攻击请求数据包
+     */
+    private static void handleSpitAttackPacket(SpitAttackPacket packet, Supplier<NetworkEvent.Context> context) {
+        NetworkEvent.Context ctx = context.get();
+        
+        if (ctx.getDirection() == NetworkDirection.PLAY_TO_SERVER) {
+            // 服务器端处理
+            ctx.enqueueWork(() -> {
+                ServerPlayer player = ctx.getSender();
+                com.iamalittle.black_souls_options.network.ContractNetworkHandler.handleSpitAttackRequest(player, packet);
+            });
+        }
+        
+        ctx.setPacketHandled(true);
+    }
+    
+    /**
+     * 处理接收到的随机音效请求数据包
+     */
+    private static void handleRandomSoundPacket(RandomSoundPacket packet, Supplier<NetworkEvent.Context> context) {
+        NetworkEvent.Context ctx = context.get();
+        
+        if (ctx.getDirection() == NetworkDirection.PLAY_TO_SERVER) {
+            // 服务器端处理
+            ctx.enqueueWork(() -> {
+                ServerPlayer player = ctx.getSender();
+                com.iamalittle.black_souls_options.network.ContractNetworkHandler.handleRandomSoundRequest(player, packet);
+            });
+        }
+        
+        ctx.setPacketHandled(true);
+    }
+    
+    /**
+     * 处理接收到的雪球攻击请求数据包
+     */
+    private static void handleSnowballAttackPacket(SnowballAttackPacket packet, Supplier<NetworkEvent.Context> context) {
+        NetworkEvent.Context ctx = context.get();
+        
+        if (ctx.getDirection() == NetworkDirection.PLAY_TO_SERVER) {
+            // 服务器端处理
+            ctx.enqueueWork(() -> {
+                ServerPlayer player = ctx.getSender();
+                com.iamalittle.black_souls_options.network.ContractNetworkHandler.handleSnowballAttackRequest(player, packet);
+            });
+        }
+        
+        ctx.setPacketHandled(true);
+    }
+    
+    /**
      * 向玩家发送契约同步数据包
      */
     public static void sendToPlayer(ServerPlayer player, ContractSyncPacket packet) {
@@ -184,6 +256,27 @@ public class ForgeContractNetwork {
      * 客户端发送效果开关状态请求到服务器
      */
     public static void sendEffectToggleRequest(EffectTogglePacket packet) {
+        INSTANCE.sendToServer(packet);
+    }
+    
+    /**
+     * 客户端发送吐口水攻击请求到服务器
+     */
+    public static void sendSpitAttackRequest(SpitAttackPacket packet) {
+        INSTANCE.sendToServer(packet);
+    }
+    
+    /**
+     * 客户端发送随机音效请求到服务器
+     */
+    public static void sendRandomSoundRequest(RandomSoundPacket packet) {
+        INSTANCE.sendToServer(packet);
+    }
+    
+    /**
+     * 客户端发送雪球攻击请求到服务器
+     */
+    public static void sendSnowballAttackRequest(SnowballAttackPacket packet) {
         INSTANCE.sendToServer(packet);
     }
 }

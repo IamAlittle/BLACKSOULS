@@ -73,9 +73,13 @@ public class IronGolemContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
+        if (player == null || !player.isAlive() || player.level() == null) {
+            return;
+        }
+        
         // 铁傀儡契约不需要每tick执行逻辑，击退抗性是永久性的
         // 但我们可以每tick检查一次确保效果正常应用
-        if (player != null && ironGolemContractPlayers.contains(player.getUUID())) {
+        if (ironGolemContractPlayers.contains(player.getUUID())) {
             ensureKnockbackResistanceApplied(player);
         }
     }

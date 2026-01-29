@@ -19,7 +19,7 @@ public class ContractSyncManager {
             return;
         }
         
-        ContractManager manager = GlobalContractManager.getInstance().getContractManager(player);
+        ContractManager manager = GlobalContractManager.getInstance().getServerContractManager(player);
         if (manager != null) {
             // 检查是否需要重新加载数据（避免重复加载）
             if (manager.getContractCount() == 0) {

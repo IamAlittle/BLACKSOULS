@@ -22,7 +22,7 @@ public class MixinPauseScreen extends Screen {
     /**
      * 在PauseScreen初始化时添加自定义按钮
      */
-    @Inject(method = "init", at = @At("TAIL"))
+    @Inject(method = "init", at = @At("HEAD"))
     private void onInit(CallbackInfo ci) {
         // 在左上角添加一个自定义按钮
         int buttonWidth = 100;

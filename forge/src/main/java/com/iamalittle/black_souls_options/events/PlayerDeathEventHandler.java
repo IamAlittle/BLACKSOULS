@@ -1,6 +1,5 @@
 package com.iamalittle.black_souls_options.events;
 
-import com.iamalittle.black_souls_options.effects.DeathTotemEffect;
 import com.iamalittle.black_souls_options.contracts.GlobalContractManager;
 import com.iamalittle.black_souls_options.contracts.ContractManager;
 import com.iamalittle.black_souls_options.contracts.Contract;
@@ -28,7 +27,7 @@ public class PlayerDeathEventHandler {
             if (!player.level().isClientSide()) {
                 // 检查是否有激活的唤魔者契约效果
                 boolean hasActiveEvokerContract = false;
-                ContractManager manager = GlobalContractManager.getInstance().getContractManager(player);
+                ContractManager manager = GlobalContractManager.getInstance().getServerContractManager(player);
                 if (manager != null) {
                     hasActiveEvokerContract = manager.getAllContracts().stream()
                         .anyMatch(contract -> "minecraft:evoker".equals(contract.getEntityType()) && 
@@ -36,7 +35,7 @@ public class PlayerDeathEventHandler {
                 }
                 
                 // 检查是否可以触发不死图腾效果（通过唤魔者契约）
-                if (hasActiveEvokerContract && EvokerContract.canTriggerTotem(player)) {
+                if (hasActiveEvokerContract && EvokerContract.hasTotemInInventory(player)) {
                     // 取消死亡事件，触发图腾效果
                     event.setCanceled(true);
                     EvokerContract.triggerTotemEffect(player);
@@ -71,9 +70,6 @@ public class PlayerDeathEventHandler {
     @SubscribeEvent
     public static void onPlayerRespawn(PlayerEvent.PlayerRespawnEvent event) {
         Player player = event.getEntity();
-        // 玩家重生时重置冷却状态
-        DeathTotemEffect.onPlayerRespawn(player);
-        
         // 玩家重生时重置史莱姆契约数据
         SlimeContract.resetPlayerData(player);
     }
@@ -83,17 +79,8 @@ public class PlayerDeathEventHandler {
         // 玩家重生时（从死亡状态恢复）
         if (event.isWasDeath()) {
             Player newPlayer = event.getEntity();
-            DeathTotemEffect.onPlayerRespawn(newPlayer);
+            // 重置史莱姆契约数据
+            SlimeContract.resetPlayerData(newPlayer);
         }
     }
-    
-    // 注意：死亡图腾效果的冷却时间更新已移至DeathTotemEventsForge.java中处理
-    // 避免重复调用导致冷却时间更新过快
-    // @SubscribeEvent
-    // public static void onServerTick(TickEvent.ServerTickEvent event) {
-    //     if (event.phase == TickEvent.Phase.END) {
-    //         // 每刻更新死亡图腾效果
-    //         DeathTotemEffect.tick();
-    //     }
-    // }
 }

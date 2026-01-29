@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.render;
 import com.iamalittle.black_souls_options.common.Events;
 import com.iamalittle.black_souls_options.common.events.RenderWorldLastEvent;
 import com.iamalittle.black_souls_options.contracts.Contract;
+import com.iamalittle.black_souls_options.contracts.ContractManagerHelper;
 import com.iamalittle.black_souls_options.contracts.GlobalContractManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
@@ -49,7 +50,7 @@ public class ContractTrackerRenderer {
         }
         
         // 获取玩家契约管理器
-        var contractManager = GlobalContractManager.getInstance().getContractManager(player);
+        var contractManager = ContractManagerHelper.getAppropriateContractManager(player);
         if (contractManager == null) {
             return;
         }
@@ -71,7 +72,7 @@ public class ContractTrackerRenderer {
         }
         
         // 开始渲染线条
-        LineRenderer.instance.begin(event, true);
+        LineRenderer.instance.begin(event, false);
         
         // 清理不再追踪的契约的平滑位置缓存
         Set<UUID> activeTrackingTargets = new HashSet<>();

@@ -5,7 +5,9 @@ import com.iamalittle.black_souls_options.contracts.effects.mobs.CaveSpiderContr
 import com.iamalittle.black_souls_options.contracts.effects.mobs.ZombieContract;
 import com.iamalittle.black_souls_options.contracts.effects.mobs.HuskContract;
 import com.iamalittle.black_souls_options.contracts.effects.mobs.DrownedContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.GuardianContract;
+import com.iamalittle.black_souls_options.contracts.effects.mobs.ShulkerContract;
+import com.iamalittle.black_souls_options.contracts.effects.mobs.TadpoleContract;
+import com.iamalittle.black_souls_options.contracts.effects.mobs.WitherSkeletonContract;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.damagesource.DamageSource;
@@ -53,6 +55,21 @@ public class AttackEventHandler {
             DrownedContract.applySlownessToTarget(target, attacker, damageSource);
             DrownedContract.tryConvertVillager(target, attacker);
         }
+        
+        // 检查并触发潜影贝契约的漂浮效果
+        if (ShulkerContract.hasShulkerContract(attacker)) {
+            ShulkerContract.applyLevitationToTarget(target, attacker);
+        }
+        
+        // 检查并触发蝌蚪契约的询问妈妈效果
+        if (TadpoleContract.hasTadpoleContract(attacker)) {
+            TadpoleContract.askIfTargetIsMom(target, attacker, damageSource);
+        }
+        
+        // 检查并触发凋零骷髅契约的凋零效果
+        if (WitherSkeletonContract.hasWitherSkeletonContract(attacker)) {
+            WitherSkeletonContract.applyWitherToTarget(target, attacker);
+        }
     }
     
     /**
@@ -90,6 +107,22 @@ public class AttackEventHandler {
         if (DrownedContract.hasDrownedContract(attacker)) {
             DrownedContract.applySlownessToTarget(target, attacker);
             DrownedContract.tryConvertVillager(target, attacker);
+        }
+        
+        // 检查并触发潜影贝契约的漂浮效果
+        if (ShulkerContract.hasShulkerContract(attacker)) {
+            ShulkerContract.applyLevitationToTarget(target, attacker);
+        }
+        
+        // 检查并触发蝌蚪契约的询问妈妈效果
+        if (TadpoleContract.hasTadpoleContract(attacker)) {
+            // Fabric版本没有DamageSource，创建一个默认的玩家攻击伤害来源
+            TadpoleContract.askIfTargetIsMom(target, attacker, attacker.damageSources().playerAttack(attacker));
+        }
+        
+        // 检查并触发凋零骷髅契约的凋零效果
+        if (WitherSkeletonContract.hasWitherSkeletonContract(attacker)) {
+            WitherSkeletonContract.applyWitherToTarget(target, attacker);
         }
     }
 }

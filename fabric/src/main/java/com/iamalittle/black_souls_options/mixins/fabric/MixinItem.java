@@ -1,6 +1,7 @@
 package com.iamalittle.black_souls_options.mixins.fabric;
 
 import com.iamalittle.black_souls_options.contracts.effects.mobs.AxolotlContract;
+import com.iamalittle.black_souls_options.items.BambooItemHandler;
 import com.iamalittle.black_souls_options.items.CactusItemHandler;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -33,6 +34,15 @@ public class MixinItem {
         // 检查是否是仙人掌，如果是则触发食用动画
         if (itemStack.getItem() == Items.CACTUS) {
             InteractionResultHolder<ItemStack> result = CactusItemHandler.handleCactusUse(player, hand);
+            if (result.getResult() != net.minecraft.world.InteractionResult.PASS) {
+                cir.setReturnValue(result);
+                return;
+            }
+        }
+        
+        // 检查是否是竹子，如果是则触发食用动画（熊猫契约）
+        if (itemStack.getItem() == Items.BAMBOO) {
+            InteractionResultHolder<ItemStack> result = BambooItemHandler.handleBambooUse(player, hand);
             if (result.getResult() != net.minecraft.world.InteractionResult.PASS) {
                 cir.setReturnValue(result);
                 return;

@@ -68,17 +68,26 @@ public class EnderManContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player != null && player.isAlive()) {
-            // 检查玩家是否在水中，如果在水中则受到伤害
-            checkWaterDamage(player);
+        if (player == null || !player.isAlive() || player.level() == null) {
+            return;
         }
+        
+        // 检查玩家是否在水中，如果在水中则受到伤害
+        checkWaterDamage(player);
     }
     
     /**
      * 检查玩家是否在水中，如果在水中则受到伤害（模仿末影人怕水的特性）
+     * 新增：在露天下雨天不掉血
      */
     private void checkWaterDamage(Player player) {
         if (player != null && player.isAlive() && player.isInWater()) {
+            // 检查是否在露天下雨天
+            if (isInRainAndOpenSky(player)) {
+                // 在露天下雨天，不掉血
+                return;
+            }
+            
             long currentTime = System.currentTimeMillis();
             
             // 检查是否达到水伤害间隔
@@ -90,6 +99,25 @@ public class EnderManContract extends ContractEffect {
                 lastWaterDamageTime = currentTime;
             }
         }
+    }
+    
+    /**
+     * 检查玩家是否在露天下雨天
+     * @param player 玩家
+     * @return 是否在露天下雨天
+     */
+    private boolean isInRainAndOpenSky(Player player) {
+        if (player == null || player.level() == null) {
+            return false;
+        }
+        
+        // 检查是否在下雨
+        if (!player.level().isRaining()) {
+            return false;
+        }
+        
+        // 检查玩家是否在露天（头顶没有遮挡）
+        return player.level().canSeeSky(player.blockPosition());
     }
     
     /**
@@ -145,6 +173,7 @@ public class EnderManContract extends ContractEffect {
         details.add(Component.literal("§5末影人契约效果："));
         details.add(Component.literal("§7- 免疫所有弹射物伤害"));
         details.add(Component.literal("§7- 接触水时会受到伤害（每1秒造成半颗心伤害）"));
+        details.add(Component.literal("§7- 在露天下雨天接触水不掉血"));
         details.add(Component.literal("§7- 模仿末影人的特性：怕水但免疫弹射物"));
         return details;
     }

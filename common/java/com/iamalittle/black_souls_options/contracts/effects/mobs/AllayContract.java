@@ -65,17 +65,17 @@ public class AllayContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player != null) {
-            // 检查是否需要恢复生命值（每秒一次）
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastHealTime >= 1000) {
-                healPlayer(player);
-                lastHealTime = currentTime;
-            }
-            
-            // 吸引周围的掉落物
-            attractNearbyItems(player);
+        if (player == null || !player.isAlive() || player.level() == null) return;
+        
+        // 检查是否需要恢复生命值（每秒一次）
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastHealTime >= 1000) {
+            healPlayer(player);
+            lastHealTime = currentTime;
         }
+        
+        // 吸引周围的掉落物
+        attractNearbyItems(player);
     }
     
     @Override

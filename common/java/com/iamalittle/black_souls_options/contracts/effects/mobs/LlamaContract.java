@@ -1,7 +1,7 @@
 package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
-import com.iamalittle.black_souls_options.input.ContractAbilityKeyManager;
+import com.iamalittle.black_souls_options.contracts.ContractDetector;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -25,9 +25,6 @@ public class LlamaContract extends ContractEffect {
     private static final String DISPLAY_NAME = "羊驼";
     private static final String DESCRIPTION = "可以吐口水攻击敌人";
     
-    // 羊驼契约玩家集合
-    private static final Set<UUID> llamaContractPlayers = new HashSet<>();
-    
     // 吐口水伤害
     private static final float SPIT_DAMAGE = 1.0f;
     
@@ -38,8 +35,6 @@ public class LlamaContract extends ContractEffect {
     @Override
     protected void onActivate(Player player, boolean sendMessage) {
         if (player != null) {
-            llamaContractPlayers.add(player.getUUID());
-            
             // 使用契约目标名称发送消息（仅在需要时发送）
             if (sendMessage) {
                 String entityName = effectData.getString("contractEntityName");
@@ -54,8 +49,6 @@ public class LlamaContract extends ContractEffect {
     @Override
     protected void onDeactivate(Player player) {
         if (player != null) {
-            llamaContractPlayers.remove(player.getUUID());
-            
             // 使用契约目标名称发送消息
             String entityName = effectData.getString("contractEntityName");
             if (entityName.isEmpty()) {
@@ -67,10 +60,7 @@ public class LlamaContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        // 检查按键状态，如果按下则触发吐口水能力
-        if (ContractAbilityKeyManager.isAbilityKeyPressed()) {
-            performSpitAttack(player);
-        }
+        // 羊驼契约不需要每tick更新，吐口水功能由独立系统处理
     }
     
     /**
@@ -79,7 +69,7 @@ public class LlamaContract extends ContractEffect {
      * @return 是否成功执行吐口水
      */
     public static boolean performSpitAttack(Player player) {
-        if (player == null || !llamaContractPlayers.contains(player.getUUID())) {
+        if (player == null || !hasLlamaContract(player)) {
             return false;
         }
         
@@ -106,10 +96,6 @@ public class LlamaContract extends ContractEffect {
      * @return 是否成功吐口水
      */
     private static boolean spitAtTarget(Player player) {
-        if (player.level().isClientSide()) {
-            return false; // 只在服务端执行
-        }
-        
         // 获取玩家视线方向
         Vec3 lookVec = player.getLookAngle();
         
@@ -137,14 +123,13 @@ public class LlamaContract extends ContractEffect {
      * 检查玩家是否拥有羊驼契约效果
      */
     public static boolean hasLlamaContract(Player player) {
-        return player != null && llamaContractPlayers.contains(player.getUUID());
+        return ContractDetector.hasContract(player, "minecraft:llama") || 
+               ContractDetector.hasContract(player, "minecraft:trader_llama");
     }
-    
-
     
     @Override
     protected long getTickInterval() {
-        return 100; // 每100毫秒检测一次，确保能捕获按键事件
+        return 1000; // 减少检测频率，吐口水功能由独立系统处理
     }
 
     @Override

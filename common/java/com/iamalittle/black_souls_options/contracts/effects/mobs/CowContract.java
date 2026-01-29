@@ -56,10 +56,10 @@ public class CowContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player != null) {
-            // 定期清除所有效果
-            clearAllEffects(player);
-        }
+        if (player == null || !player.isAlive() || player.level() == null) return;
+        
+        // 定期清除所有效果
+        clearAllEffects(player);
     }
     
     @Override

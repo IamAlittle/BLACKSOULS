@@ -75,7 +75,9 @@ public class ChickenContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player != null && player.isAlive() && hasChickenContract(player)) {
+        if (player == null || !player.isAlive() || player.level() == null) return;
+        
+        if (hasChickenContract(player)) {
             // 只在服务端执行
             if (!player.level().isClientSide()) {
                 // 检查玩家是否在空中

@@ -8,15 +8,16 @@ import java.util.*;
 import java.io.File;
 
 /**
- * 全局契约管理器，负责管理所有玩家的契约数据
+ * 全局契约管理器，负责管理服务器端玩家的契约数据
+ * 客户端契约数据由ClientContractManager单独管理，防止数据混乱
  */
 public class GlobalContractManager {
     private static GlobalContractManager instance;
-    private final Map<UUID, ContractManager> playerContractManagers;
+    private final Map<UUID, ContractManager> serverPlayerContractManagers;
     private MinecraftServer server;
     
     private GlobalContractManager() {
-        this.playerContractManagers = new HashMap<>();
+        this.serverPlayerContractManagers = new HashMap<>();
     }
     
     /**
@@ -37,82 +38,100 @@ public class GlobalContractManager {
     }
     
     /**
-     * 获取玩家的契约管理器（服务器端创建，客户端可获取已存在的管理器）
+     * 获取服务器端玩家的契约管理器（仅服务器端使用）
      */
-    public ContractManager getContractManager(Player player) {
+    public ContractManager getServerContractManager(Player player) {
         if (player == null) {
             return null;
         }
         
         UUID playerUuid = player.getUUID();
         
-        // 如果已有管理器，直接返回（适用于服务器端和客户端）
-        if (playerContractManagers.containsKey(playerUuid)) {
-            return playerContractManagers.get(playerUuid);
+        // 如果已有管理器，直接返回
+        if (serverPlayerContractManagers.containsKey(playerUuid)) {
+            return serverPlayerContractManagers.get(playerUuid);
         }
         
         // 关键修复：检查是否在服务器端执行
         if (player.level() == null || player.level().isClientSide()) {
-            // 客户端：创建只读的契约管理器用于显示数据
-            ContractManager clientManager = new ContractManager(player);
-            playerContractManagers.put(playerUuid, clientManager);
-            System.out.println("[BLACKSOULS] Client ContractManager created for player: " + player.getScoreboardName());
-            return clientManager;
+            // 客户端：返回null，客户端应使用ClientContractManager
+            System.out.println("[BLACKSOULS] Warning: Attempted to get server ContractManager on client side");
+            return null;
         }
         
         // 关键修复：检查玩家状态，避免为无效玩家创建管理器
         if (player.level().getServer() == null) {
             // 玩家无效，返回null或已存在的管理器（如果存在）
-            if (playerContractManagers.containsKey(playerUuid)) {
-                return playerContractManagers.get(playerUuid);
+            if (serverPlayerContractManagers.containsKey(playerUuid)) {
+                return serverPlayerContractManagers.get(playerUuid);
             }
-            //System.err.println("[BLACKSOULS] Warning: Attempted to get ContractManager for invalid player");
             return null;
         }
         
         // 如果已有管理器，直接返回
-        if (playerContractManagers.containsKey(playerUuid)) {
-            return playerContractManagers.get(playerUuid);
+        if (serverPlayerContractManagers.containsKey(playerUuid)) {
+            return serverPlayerContractManagers.get(playerUuid);
         }
         
         // 创建新的契约管理器（仅在服务器端）
         ContractManager contractManager = new ContractManager(player);
-        playerContractManagers.put(playerUuid, contractManager);
+        serverPlayerContractManagers.put(playerUuid, contractManager);
         
         // 向客户端发送契约数据同步
         if (player instanceof ServerPlayer) {
             ContractNetworkHandler.sendContractDataToPlayer((ServerPlayer) player, true);
         }
         
-        System.out.println("[BLACKSOULS] ContractManager created on server for player: " + player.getScoreboardName());
+        System.out.println("[BLACKSOULS] Server ContractManager created for player: " + player.getScoreboardName());
         return contractManager;
     }
     
     /**
-     * 移除玩家的契约管理器（当玩家退出游戏时）
+     * 获取玩家的契约管理器（兼容旧版本，推荐使用getServerContractManager）
      */
-    public void removeContractManager(UUID playerUuid) {
-        ContractManager manager = playerContractManagers.get(playerUuid);
+    public ContractManager getContractManager(Player player) {
+        return getServerContractManager(player);
+    }
+    
+    /**
+     * 移除服务器端玩家的契约管理器（当玩家退出游戏时）
+     */
+    public void removeServerContractManager(UUID playerUuid) {
+        ContractManager manager = serverPlayerContractManagers.get(playerUuid);
         if (manager != null) {
             // 强制保存数据
             manager.forceSave();
-            playerContractManagers.remove(playerUuid);
+            serverPlayerContractManagers.remove(playerUuid);
         }
     }
     
     /**
-     * 获取所有玩家的契约管理器
+     * 移除玩家的契约管理器（兼容旧版本）
      */
-    public Collection<ContractManager> getAllContractManagers() {
-        return Collections.unmodifiableCollection(playerContractManagers.values());
+    public void removeContractManager(UUID playerUuid) {
+        removeServerContractManager(playerUuid);
     }
     
     /**
-     * 定期保存所有玩家的契约数据
+     * 获取所有服务器端玩家的契约管理器
+     */
+    public Collection<ContractManager> getAllServerContractManagers() {
+        return Collections.unmodifiableCollection(serverPlayerContractManagers.values());
+    }
+    
+    /**
+     * 获取所有玩家的契约管理器（兼容旧版本）
+     */
+    public Collection<ContractManager> getAllContractManagers() {
+        return getAllServerContractManagers();
+    }
+    
+    /**
+     * 定期保存所有服务器端玩家的契约数据
      */
     public void tick() {
         // 使用迭代器安全地遍历，避免并发修改异常
-        Iterator<ContractManager> iterator = playerContractManagers.values().iterator();
+        Iterator<ContractManager> iterator = serverPlayerContractManagers.values().iterator();
         while (iterator.hasNext()) {
             ContractManager manager = iterator.next();
             
@@ -132,10 +151,10 @@ public class GlobalContractManager {
      * 服务器关闭时保存所有数据
      */
     public void onServerStopping() {
-        for (ContractManager manager : playerContractManagers.values()) {
+        for (ContractManager manager : serverPlayerContractManagers.values()) {
             manager.forceSave();
         }
-        playerContractManagers.clear();
+        serverPlayerContractManagers.clear();
     }
     
     /**

@@ -1,37 +1,6 @@
 package com.iamalittle.black_souls_options.contracts.effects;
 
-import com.iamalittle.black_souls_options.contracts.effects.mobs.RabbitContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.AllayContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.AxolotlContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.BatContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.BeeContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.BlazeContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.CamelContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.CatContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.CaveSpiderContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.ChickenContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.EndermiteContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.FishContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.CowContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.CreeperContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.DolphinContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.HorseContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.ZombieContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.DrownedContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.HuskContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.GuardianContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.EnderManContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.EvokerContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.FoxContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.FrogContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.GhastContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.GlowSquidContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.GoatContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.GuardianThornsContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.HoglinContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.IronGolemContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.LlamaContract;
-import com.iamalittle.black_souls_options.contracts.effects.mobs.SlimeContract;
+import com.iamalittle.black_souls_options.contracts.effects.mobs.*;
 
 import java.util.*;
 
@@ -177,9 +146,10 @@ public class ContractEffectRegistry {
         registerEffectAndEntityType("camel_cactus_eat", new CamelContract(), "minecraft:camel");
         // 猫
         registerEffectAndEntityType("cat_scare_creeper", new CatContract(), "minecraft:cat");
+        // 豹猫（使用与猫相同的契约）
+        registerEffectAndEntityType("cat_scare_creeper", new CatContract(), "minecraft:ocelot");
         // 洞穴蜘蛛
         registerEffectAndEntityType("cave_spider_poison", new CaveSpiderContract(), "minecraft:cave_spider");
-
         // 鱼类（鲑鱼）
         registerEffectAndEntityType("fish_swim_boost", new FishContract(), "minecraft:salmon");
         // 鱼类（鳕鱼）
@@ -200,6 +170,10 @@ public class ContractEffectRegistry {
         registerEffectAndEntityType("horse_auto_step", new HorseContract(), "minecraft:donkey");
         // 骡
         registerEffectAndEntityType("horse_auto_step", new HorseContract(), "minecraft:mule");
+        // 僵尸马
+        registerEffectAndEntityType("horse_auto_step", new HorseContract(), "minecraft:zombie_horse");
+        // 骷髅马
+        registerEffectAndEntityType("horse_auto_step", new HorseContract(), "minecraft:skeleton_horse");
         
         // 僵尸
         registerEffectAndEntityType("zombie_infect_villager", new ZombieContract(), "minecraft:zombie");
@@ -211,7 +185,7 @@ public class ContractEffectRegistry {
         registerEffectAndEntityType("husk_hunger_effect", new HuskContract(), "minecraft:husk");
 
         // 远古守卫者
-        registerEffectAndEntityType("guardian_water_clear", new GuardianContract(), "minecraft:elder_guardian");
+        registerEffectAndEntityType("guardian_fluid_clear", new GuardianContract(), "minecraft:elder_guardian");
         // 末影人
         registerEffectAndEntityType("enderman_projectile_immunity", new EnderManContract(), "minecraft:enderman");
         // 鸡
@@ -234,6 +208,9 @@ public class ContractEffectRegistry {
         
         // 发光鱿鱼
         registerEffectAndEntityType("glow_squid_glowing", new GlowSquidContract(), "minecraft:glow_squid");
+        
+        // 鱿鱼
+        registerEffectAndEntityType("squid_blindness_defense", new SquidContract(), "minecraft:squid");
         
         // 山羊
         registerEffectAndEntityType("goat_floor_charge", new GoatContract(), "minecraft:goat");
@@ -258,5 +235,97 @@ public class ContractEffectRegistry {
         registerEffectAndEntityType("slime_split_rebirth", new SlimeContract(), "minecraft:slime");
         // 岩浆怪
         registerEffectAndEntityType("slime_split_rebirth", new SlimeContract(), "minecraft:magma_cube");
+        
+        // 哞菇
+        registerEffectAndEntityType("mooshroom_stew_giver", new MooshroomContract(), "minecraft:mooshroom");
+        
+        // 熊猫
+        registerEffectAndEntityType("panda_bamboo_eat", new PandaContract(), "minecraft:panda");
+        
+        // 鹦鹉
+        registerEffectAndEntityType("parrot_random_sound", new ParrotContract(), "minecraft:parrot");
+        
+        // 幻翼
+        registerEffectAndEntityType("phantom_elytra_repair", new PhantomContract(), "minecraft:phantom");
+        
+        // 猪
+        registerEffectAndEntityType("pig_basic", new PigContract(), "minecraft:pig");
+        
+        // 骷髅
+        registerEffectAndEntityType("skeleton_infinite_arrows", new SkeletonContract(), "minecraft:skeleton");
+        
+        // 猪灵
+        registerEffectAndEntityType("piglin_loved_vision", new PiglinContract(), "minecraft:piglin");
+        // 猪灵蛮兵
+        registerEffectAndEntityType("piglin_loved_vision", new PiglinContract(), "minecraft:piglin_brute");
+        
+        // 掠夺者
+        registerEffectAndEntityType("illager_bad_omen", new IllagerContract(), "minecraft:pillager");
+        // 卫道士
+        registerEffectAndEntityType("illager_bad_omen", new IllagerContract(), "minecraft:vindicator");
+        // 幻术师
+        registerEffectAndEntityType("illager_bad_omen", new IllagerContract(), "minecraft:illusioner");
+        // 劫掠兽
+        registerEffectAndEntityType("ravager_destroy_plants", new RavagerContract(), "minecraft:ravager");
+        
+        // 北极熊
+        registerEffectAndEntityType("polar_bear_freeze_immunity", new PolarBearContract(), "minecraft:polar_bear");
+        
+        // 河豚
+        registerEffectAndEntityType("pufferfish_poison_aura", new PufferfishContract(), "minecraft:pufferfish");
+        
+        // 岩浆怪
+        registerEffectAndEntityType("magma_cube_fire_immunity", new MagmaCubeContract(), "minecraft:magma_cube");
+        
+        // 绵羊
+        registerEffectAndEntityType("sheep_rainbow_color", new SheepContract(), "minecraft:sheep");
+        
+        // 潜影贝
+        registerEffectAndEntityType("shulker_levitation", new ShulkerContract(), "minecraft:shulker");
+        
+        // 蠹虫
+        registerEffectAndEntityType("silverfish_stone_breaker", new SilverfishContract(), "minecraft:silverfish");
+        
+        // 嗅探兽
+        registerEffectAndEntityType("sniffer_find_treasure", new SnifferContract(), "minecraft:sniffer");
+        
+        // 雪傀儡
+        registerEffectAndEntityType("snow_golem_snowball_attack", new SnowGolemContract(), "minecraft:snow_golem");
+
+        // 蜘蛛
+        registerEffectAndEntityType("spider_climbing", new SpiderContract(), "minecraft:spider");
+
+        // 流浪者
+        registerEffectAndEntityType("stray_slowness_arrows", new StrayContract(), "minecraft:stray");
+        
+        // 赤足兽
+        registerEffectAndEntityType("strider_lava_walking", new StriderContract(), "minecraft:strider");
+        
+        // 蝌蚪
+        registerEffectAndEntityType("tadpole_mom_question", new TadpoleContract(), "minecraft:tadpole");
+        
+        // 海龟
+        registerEffectAndEntityType("turtle_attract_hostile", new TurtleContract(), "minecraft:turtle");
+        
+        // 恼鬼
+        registerEffectAndEntityType("vex_immune", new VexContract(), "minecraft:vex");
+        
+        // 村民
+        registerEffectAndEntityType("villager_hero_of_the_village", new VillagerContract(), "minecraft:villager");
+        
+        // 流浪商人
+        registerEffectAndEntityType("villager_hero_of_the_village", new VillagerContract(), "minecraft:wandering_trader");
+        
+        // 监守者
+        registerEffectAndEntityType("warden_vibration_glow", new WardenContract(), "minecraft:warden");
+        
+        // 女巫
+        registerEffectAndEntityType("witch_magic_resistance", new WitchContract(), "minecraft:witch");
+        
+        // 狼
+        registerEffectAndEntityType("wolf_tame_wolves", new WolfContract(), "minecraft:wolf");
+        
+        // 凋零骷髅
+        registerEffectAndEntityType("wither_skeleton_wither", new WitherSkeletonContract(), "minecraft:wither_skeleton");
     }
 }

@@ -1,17 +1,19 @@
 package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import java.util.*;
 
 /**
@@ -71,7 +73,9 @@ public class DrownedContract extends ContractEffect {
     @Override
     protected void onTick(Player player) {
         // 检查玩家是否在太阳底下并着火
-        if (player != null && player.isAlive() && hasDrownedContract(player)) {
+        if (player == null || !player.isAlive() || player.level() == null) return;
+        
+        if (hasDrownedContract(player)) {
             // 只在服务端执行
             if (!player.level().isClientSide()) {
                 // 检查是否在白天、户外、没有遮挡
@@ -251,8 +255,8 @@ public class DrownedContract extends ContractEffect {
             
             // 播放转化音效
             serverLevel.playSound(null, villager.getX(), villager.getY(), villager.getZ(),
-                net.minecraft.sounds.SoundEvents.ZOMBIE_VILLAGER_CONVERTED, 
-                net.minecraft.sounds.SoundSource.HOSTILE, 1.0f, 1.0f);
+                SoundEvents.ZOMBIE_VILLAGER_CONVERTED, 
+                SoundSource.HOSTILE, 1.0f, 1.0f);
         }
         
         // 给攻击者发送转化消息

@@ -73,7 +73,9 @@ public class CatContract extends ContractEffect {
         // 猫契约不需要每tick更新，逃离逻辑在Creeper的AI中处理
         
         // 检查并驱散附近的幻翼
-        if (player != null && player.isAlive() && hasCatContract(player)) {
+        if (player == null || !player.isAlive() || player.level() == null) return;
+        
+        if (hasCatContract(player)) {
             scareAwayPhantoms(player);
         }
     }

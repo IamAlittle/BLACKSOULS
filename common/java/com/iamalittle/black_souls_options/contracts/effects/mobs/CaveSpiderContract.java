@@ -1,12 +1,14 @@
 package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -70,6 +72,21 @@ public class CaveSpiderContract extends ContractEffect {
         // 洞穴蜘蛛契约不需要每tick更新，中毒逻辑在攻击时处理
     }
     
+    @Override
+    public void playerTick(Minecraft minecraft, Player player) {
+        if (player == null || !isActive()) return;
+        
+        // 检查玩家是否接触墙壁（水平方向有碰撞）
+        if (!player.horizontalCollision) return;
+        
+        // 检查玩家是否向下看（视线向量的Y轴值小于0.2）
+        Vec3 lookVec = player.getViewVector(0);
+        if (lookVec.y >= 0.2) return;
+        
+        // 设置玩家垂直移动速度，实现爬墙效果
+        player.setDeltaMovement(player.getDeltaMovement().x, 0.2, player.getDeltaMovement().z);
+    }
+    
     // 契约玩家集合（用于快速检查）
     private static final Set<UUID> caveSpiderContractPlayers = new HashSet<>();
     
@@ -90,13 +107,6 @@ public class CaveSpiderContract extends ContractEffect {
                 );
                 
                 livingTarget.addEffect(poisonEffect);
-                
-                // 显示中毒粒子效果
-                if (target.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-                    serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.ITEM_SLIME,
-                        target.getX(), target.getY() + 1, target.getZ(),
-                        8, 0.5, 0.5, 0.5, 0.1);
-                }
             }
         }
     }
@@ -115,6 +125,8 @@ public class CaveSpiderContract extends ContractEffect {
         details.add(Component.literal("§2毒液攻击"));
         details.add(Component.literal("§2- 攻击时使目标中毒"));
         details.add(Component.literal("§2- 中毒持续" + POISON_DURATION + "秒"));
+        details.add(Component.literal("§2爬墙能力"));
+        details.add(Component.literal("§2- 接触墙壁时按跳跃键向上爬"));
         return details;
     }
 }

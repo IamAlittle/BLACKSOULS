@@ -90,7 +90,13 @@ public class GlowSquidContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player == null || player.level().isClientSide()) {
+        // 关键修复：检查玩家状态，避免在玩家死亡或无效状态下执行
+        if (player == null || !player.isAlive() || player.level() == null) {
+            return;
+        }
+        
+        // 客户端不执行逻辑
+        if (player.level().isClientSide()) {
             return;
         }
         

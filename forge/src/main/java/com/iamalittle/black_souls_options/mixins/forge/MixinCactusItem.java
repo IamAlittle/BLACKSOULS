@@ -1,5 +1,6 @@
 package com.iamalittle.black_souls_options.mixins.forge;
 
+import com.iamalittle.black_souls_options.items.BambooItemHandler;
 import com.iamalittle.black_souls_options.items.CactusItemHandler;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -23,6 +24,11 @@ public class MixinCactusItem {
         if (stack.getItem() == Items.CACTUS) {
             cir.setReturnValue(CactusItemHandler.getCactusUseAnimation());
         }
+        
+        // 为竹子设置使用动画（熊猫契约）
+        if (stack.getItem() == Items.BAMBOO) {
+            cir.setReturnValue(BambooItemHandler.getBambooUseAnimation());
+        }
     }
     
     /**
@@ -32,6 +38,11 @@ public class MixinCactusItem {
     private void setCactusUseDuration(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
         if (stack.getItem() == Items.CACTUS) {
             cir.setReturnValue(CactusItemHandler.getCactusUseDuration());
+        }
+        
+        // 为竹子设置使用持续时间（熊猫契约）
+        if (stack.getItem() == Items.BAMBOO) {
+            cir.setReturnValue(BambooItemHandler.getBambooUseDuration());
         }
     }
 }

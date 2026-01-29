@@ -2,7 +2,7 @@ package com.iamalittle.black_souls_options;
 
 import com.iamalittle.black_souls_options.controllers.TargetEntityScreen;
 import com.iamalittle.black_souls_options.contracts.ContractSystem;
-import com.iamalittle.black_souls_options.input.ContractAbilityKeyManager;
+import com.iamalittle.black_souls_options.input.SpitAbilityKeyManager;
 import com.iamalittle.black_souls_options.render.ContractTrackerRenderer;
 import com.iamalittle.black_souls_options.wrappers.ForgeEvents;
 import com.iamalittle.black_souls_options.forge.ContractEventsForge;
@@ -48,7 +48,7 @@ public class ModMain {
 
 		@SubscribeEvent
 		public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-			event.register(ContractAbilityKeyManager.CONTRACT_ABILITY_KEY);
+			event.register(SpitAbilityKeyManager.SPIT_ABILITY_KEY);
 		}
 	}
 	
@@ -69,7 +69,7 @@ public class ModMain {
 			if (event.phase == net.minecraftforge.event.TickEvent.Phase.END) {
 				Minecraft minecraft = Minecraft.getInstance();
 				if (minecraft.player != null) {
-					ContractAbilityKeyManager.updateKeyState();
+					SpitAbilityKeyManager.updateKeyState();
 				}
 			}
 		}

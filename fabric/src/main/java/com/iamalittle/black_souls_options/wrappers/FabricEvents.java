@@ -97,8 +97,5 @@ public class FabricEvents {
         
         // 初始化死亡图腾事件处理器
         FabricPlayerDeathEventHandler.initialize();
-        
-        // 初始化死亡图腾数据事件处理器
-        com.iamalittle.black_souls_options.fabric.DeathTotemEventsFabric.initialize();
     }
 }

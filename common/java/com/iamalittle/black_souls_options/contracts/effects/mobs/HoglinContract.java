@@ -94,7 +94,12 @@ public class HoglinContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player == null || player.level().isClientSide()) {
+        if (player == null || !player.isAlive() || player.level() == null) {
+            return;
+        }
+        
+        // 客户端不执行逻辑
+        if (player.level().isClientSide()) {
             return;
         }
         

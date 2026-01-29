@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "black_souls_options",
+  "version": "2.7.9",
+
+  "name": "Black Souls:Options",
+  "description": "A GalGame related mod that displays entity HUD information when right-clicking on entities. Press ESC to clear the displayed HUD.",
+  "authors": [
+    "iamalittle"
+  ],
+  "contact": {
+    "homepage": "",
+    "sources": "",
+    "issues": ""
+  },
+
+  "license": "MIT",
+
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.iamalittle.black_souls_options.ModMain"
+    ]
+  },
+  "mixins": [
+    "black_souls_options.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "fabric": "*",
+    "minecraft": "~1.20.1",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

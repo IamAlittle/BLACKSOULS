@@ -81,7 +81,7 @@ public class BlazeContract extends ContractEffect {
     
     @Override
     protected void onTick(Player player) {
-        if (player == null || !player.isAlive()) return;
+        if (player == null || !player.isAlive() || player.level() == null) return;
         
         long currentTime = System.currentTimeMillis();
         

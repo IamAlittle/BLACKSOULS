@@ -24,6 +24,7 @@ public class ContractManager {
     private final Player owner;                    // 契约所有者
     private final Map<UUID, Contract> contracts;   // 契约映射表
     private final File saveFile;                   // 保存文件路径
+    private final boolean isClientSide;            // 是否为客户端管理器
     private boolean needsSave = false;             // 是否需要保存
     private long lastSaveTime = 0;                 // 最后保存时间
     private static final long SAVE_INTERVAL_MS = 30000; // 30秒保存一次
@@ -35,10 +36,12 @@ public class ContractManager {
         // 关键修复：检查是否在服务器端执行
         if (player == null || player.level() == null || player.level().isClientSide()) {
             // 客户端创建管理器，使用临时文件路径
+            this.isClientSide = true;
             this.saveFile = new File("temp_contracts", player != null ? player.getUUID().toString() + ".dat" : "unknown.dat");
             System.out.println("[BLACKSOULS] Client ContractManager created for: " + (player != null ? player.getScoreboardName() : "null"));
         } else {
             // 关键修复：检查玩家状态，避免在玩家死亡或无效状态下初始化
+            this.isClientSide = false;
             if (player.level().getServer() == null) {
                 // 玩家无效，无法获取服务器路径，使用临时文件路径
                 this.saveFile = new File("temp_contracts", player != null ? player.getUUID().toString() + ".dat" : "unknown.dat");
@@ -71,7 +74,7 @@ public class ContractManager {
      */
     public void createContract(UUID entityUuid, String entityType, String entityName, Vec3 position, String dimension) {
         // 检查是否在服务器端执行
-        if (owner == null || owner.level() == null || owner.level().isClientSide()) {
+        if (isClientSide) {
             System.out.println("[BLACKSOULS] Warning: Attempted to create contract on client side");
             return;
         }
@@ -128,11 +131,22 @@ public class ContractManager {
      * 清空所有契约（用于网络同步）
      */
     public void clearContracts() {
-        // 停用所有契约效果
-        for (Contract contract : contracts.values()) {
-            contract.deactivateEffects(owner);
+        // 关键修复：客户端同步时不发送停用消息，避免玩家死亡时收到"契约效果停用"消息
+        if (owner != null && owner.level() != null && owner.level().isClientSide()) {
+            // 客户端：只清空契约列表，不发送停用消息
+            contracts.clear();
+        } else {
+            // 服务器端：正常停用效果并清空列表
+            for (Contract contract : contracts.values()) {
+                contract.deactivateEffects(owner);
+            }
+            contracts.clear();
         }
-        contracts.clear();
+        
+        // 重置鱼类契约计数（避免客户端和服务器端计数不一致）
+        if (owner != null) {
+            com.iamalittle.black_souls_options.contracts.effects.mobs.FishContract.resetPlayerFishContractCount(owner);
+        }
     }
     
     /**
@@ -146,6 +160,16 @@ public class ContractManager {
         }
         
         contracts.put(contract.getEntityId(), contract);
+        
+        // 关键修复：客户端只设置激活状态，不实际激活效果
+        // 避免玩家重生时重复收到"契约效果激活！"消息
+        if (owner != null && owner.level() != null && owner.level().isClientSide()) {
+            // 只设置效果激活状态，不发送激活消息
+            for (ContractEffect effect : contract.getEffects()) {
+                effect.setActive(effect.isActive()); // 保持原有激活状态
+            }
+        }
+        
         // 不标记保存，因为这是从服务器同步的数据
     }
     
@@ -174,8 +198,10 @@ public class ContractManager {
             contract.addEffect(effect);
         }
         
-        // 激活契约效果
-        contract.activateEffects(owner);
+        // 激活契约效果（仅在服务器端激活，客户端只设置状态）
+        if (owner != null && owner.level() != null && !owner.level().isClientSide()) {
+            contract.activateEffects(owner);
+        }
     }
     
     /**
@@ -195,7 +221,8 @@ public class ContractManager {
             return;
         }
         
-        if (needsSave && System.currentTimeMillis() - lastSaveTime > SAVE_INTERVAL_MS) {
+        // 客户端不进行保存检查
+        if (!isClientSide && needsSave && System.currentTimeMillis() - lastSaveTime > SAVE_INTERVAL_MS) {
             saveToFile();
         }
         
@@ -218,11 +245,23 @@ public class ContractManager {
     }
     
     /**
+     * 客户端playerTick方法，用于处理客户端特定的效果逻辑
+     */
+    public void playerTick(net.minecraft.client.Minecraft minecraft) {
+        if (owner == null) return;
+        
+        // 遍历所有契约并调用效果的playerTick方法
+        for (Contract contract : getAllContracts()) {
+            contract.playerTickEffects(minecraft, owner);
+        }
+    }
+    
+    /**
      * 从文件加载契约数据
      */
     private void loadFromFile() {
         // 检查是否在服务器端执行
-        if (owner == null || owner.level() == null || owner.level().isClientSide()) {
+        if (isClientSide) {
             System.out.println("[BLACKSOULS] Warning: Attempted to load contract data on client side");
             return;
         }
@@ -262,7 +301,7 @@ public class ContractManager {
      */
     public void saveToFile() {
         // 检查是否在服务器端执行
-        if (owner == null || owner.level() == null || owner.level().isClientSide()) {
+        if (isClientSide) {
             System.out.println("[BLACKSOULS] Warning: Attempted to save contract data on client side");
             return;
         }

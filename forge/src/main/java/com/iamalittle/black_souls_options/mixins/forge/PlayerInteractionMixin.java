@@ -48,8 +48,17 @@ public class PlayerInteractionMixin {
             // 取消物品使用动作
             cir.setReturnValue(InteractionResult.PASS);
             player.displayClientMessage(Component.literal("§c装死时无法使用物品！"), true);
+            return;
         }
 
+        // 检查哞菇契约的右键点击玩家交互
+        if (entity instanceof Player) {
+            InteractionResult result = com.iamalittle.black_souls_options.contracts.effects.mobs.MooshroomContract.handlePlayerRightClick(player, entity, hand);
+            if (result != InteractionResult.PASS) {
+                cir.setReturnValue(result);
+                return;
+            }
+        }
     }
 
     /**

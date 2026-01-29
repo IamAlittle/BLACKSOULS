@@ -67,7 +67,7 @@ public class ContractSystem {
     public static ContractManager getContractManager() {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player != null) {
-            return GlobalContractManager.getInstance().getContractManager(minecraft.player);
+            return ContractManagerHelper.getAppropriateContractManager(minecraft.player);
         }
         return null;
     }
@@ -80,7 +80,7 @@ public class ContractSystem {
         GlobalContractManager globalManager = GlobalContractManager.getInstance();
         
         // 遍历所有玩家的契约管理器并更新实体位置
-        for (ContractManager manager : globalManager.getAllContractManagers()) {
+        for (ContractManager manager : globalManager.getAllServerContractManagers()) {
             manager.updateAllEntityPositions();
         }
         
@@ -98,7 +98,7 @@ public class ContractSystem {
         GlobalContractManager globalManager = GlobalContractManager.getInstance();
         
         // 遍历所有玩家的契约管理器并检查消失的实体
-        for (ContractManager manager : globalManager.getAllContractManagers()) {
+        for (ContractManager manager : globalManager.getAllServerContractManagers()) {
             manager.checkAndRemoveVanishedEntityContracts();
         }
     }

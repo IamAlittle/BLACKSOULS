@@ -186,8 +186,10 @@ public class ContractSyncPacket {
                     contract.addEffect(effect);
                     
                     // 如果效果是激活状态，激活效果（不发送消息）
+                    // 注意：这里不激活效果，因为客户端没有正确的玩家对象
+                    // 效果激活将在客户端契约管理器处理时进行
                     if (effectInfo.isActive) {
-                        effect.activate(null, false); // 传入null，稍后玩家对象会通过其他方式设置
+                        effect.setActive(true); // 只设置激活状态，不实际激活
                     }
                 }
             }
@@ -200,7 +202,7 @@ public class ContractSyncPacket {
      * 创建契约数据包（用于服务器向客户端发送）
      */
     public static ContractSyncPacket createForPlayer(ServerPlayer player, boolean fullSync) {
-        ContractManager manager = GlobalContractManager.getInstance().getContractManager(player);
+        ContractManager manager = GlobalContractManager.getInstance().getServerContractManager(player);
         if (manager == null) {
             return new ContractSyncPacket(player.getUUID(), new ArrayList<>(), fullSync);
         }

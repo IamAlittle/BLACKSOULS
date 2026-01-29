@@ -2,6 +2,7 @@ package com.iamalittle.black_souls_options.controllers;
 
 import com.iamalittle.black_souls_options.contracts.Contract;
 import com.iamalittle.black_souls_options.contracts.ContractManager;
+import com.iamalittle.black_souls_options.contracts.ContractManagerHelper;
 import com.iamalittle.black_souls_options.contracts.GlobalContractManager;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 
@@ -37,7 +38,7 @@ public class ContractsScreen extends Screen {
     
     public ContractsScreen() {
         super(Component.literal("契约列表"));
-        this.contractManager = GlobalContractManager.getInstance().getContractManager(Minecraft.getInstance().player);
+        this.contractManager = ContractManagerHelper.getAppropriateContractManager(Minecraft.getInstance().player);
         this.sortedContracts = new ArrayList<>();
         this.lastUpdateTime = System.currentTimeMillis();
         this.selectedContract = null;
@@ -514,7 +515,7 @@ public class ContractsScreen extends Screen {
         int detailX = 20;
         int detailY = 55;
         int detailWidth = this.width - 40;
-        int effectDetailsHeight = 70;
+        int effectDetailsHeight = 70; // 固定高度70像素
         
         if (mouseX >= detailX && mouseX <= detailX + detailWidth && 
             mouseY >= detailY && mouseY <= detailY + effectDetailsHeight) {
@@ -634,7 +635,7 @@ public class ContractsScreen extends Screen {
         int detailX = 20;
         int detailY = 50; // 契约详细信息下方（30+16+5=51），与上方保持5像素间隔
         int detailWidth = this.width - 40;
-        int effectDetailsHeight = Math.min(200, Math.max(65, calculateEffectDetailsHeight() + 20)); // 动态调整高度，最小65像素，最大200像素
+        int effectDetailsHeight = 70; // 固定高度70像素
         
         // 绘制效果详情区域背景
         guiGraphics.fill(detailX, detailY, detailX + detailWidth, detailY + effectDetailsHeight, 0xCC222222);
@@ -753,6 +754,21 @@ public class ContractsScreen extends Screen {
             
             // 绘制滚动条滑块
             guiGraphics.fill(scrollBarX, sliderY, scrollBarX + scrollBarWidth, sliderY + sliderHeight, 0x888888);
+        }
+        
+        // 如果内容超出可见区域，在底部中间绘制倒三角符号提示下方有更多内容
+        if (needScrollBar && effectDetailsScrollOffset < contentHeight - maxVisibleHeight) {
+            int triangleX = detailX + detailWidth / 2 - 3; // 中间位置
+            int triangleY = detailY + effectDetailsHeight - 10; // 底部上方10像素
+            
+            // 绘制倒三角符号 ▼
+            guiGraphics.drawString(
+                font,
+                "▼",
+                triangleX,
+                triangleY,
+                0xAAAAAA
+            );
         }
     }
     
