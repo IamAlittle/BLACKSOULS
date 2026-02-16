@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -22,8 +23,8 @@ import java.util.Map;
  */
 public class SlimeContract extends ContractEffect {
     private static final String EFFECT_ID = "slime_split_rebirth";
-    private static final String DISPLAY_NAME = "史莱姆分裂重生";
-    private static final String DESCRIPTION = "死亡时分裂重生，每次死亡扣除一半生命值上限";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.slime.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.slime.description";
     
     // 存储玩家死亡次数和生命值上限数据
     private static final Map<UUID, SlimePlayerData> playerDataMap = new HashMap<>();
@@ -75,11 +76,16 @@ public class SlimeContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b分裂重生效果："));
-        details.add(Component.literal("§7第一次死亡：拦截死亡，扣除一半生命值上限并恢复满血"));
-        details.add(Component.literal("§7第二次死亡：再扣一半上限并恢复满血"));
-        details.add(Component.literal("§7第三次死亡：正常死亡"));
-        details.add(Component.literal("§7优先级低于唤魔者契约"));
+        details.add(Component.translatable("black_souls_options.contracts.slime.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.slime.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.slime.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.slime.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.slime.effect4")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     
@@ -188,22 +194,6 @@ public class SlimeContract extends ContractEffect {
         
         // 检查玩家数据中是否有史莱姆契约
         return playerDataMap.containsKey(player.getUUID());
-    }
-    
-    /**
-     * 获取玩家当前的死亡次数
-     */
-    public static int getPlayerDeathCount(Player player) {
-        if (player == null) {
-            return 0;
-        }
-        
-        SlimePlayerData playerData = playerDataMap.get(player.getUUID());
-        if (playerData == null) {
-            return 0;
-        }
-        
-        return playerData.getDeathCount();
     }
     
     /**

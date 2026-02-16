@@ -31,7 +31,7 @@ public class PlayerInteractionMixin {
         if (AxolotlContract.isPlayerFeigningDeath(player)) {
             // 取消攻击动作
             ci.cancel();
-            player.displayClientMessage(Component.literal("§c装死时无法攻击！"), true);
+            player.displayClientMessage(Component.translatable("black_souls_options.messages.feigning_death_cannot_attack"), true);
         }
     }
 
@@ -48,7 +48,7 @@ public class PlayerInteractionMixin {
         if (AxolotlContract.isPlayerFeigningDeath(player)) {
             // 取消物品使用动作
             cir.setReturnValue(InteractionResult.PASS);
-            player.displayClientMessage(Component.literal("§c装死时无法使用物品！"), true);
+            player.displayClientMessage(Component.translatable("black_souls_options.messages.feigning_death_cannot_use_item"), true);
             return;
         }
 
@@ -73,7 +73,7 @@ public class PlayerInteractionMixin {
         if (AxolotlContract.isPlayerFeigningDeath(player)) {
             // 取消进食动作
             cir.setReturnValue(itemStack);
-            player.displayClientMessage(Component.literal("§c装死时无法进食！"), true);
+            player.displayClientMessage(Component.translatable("black_souls_options.messages.feigning_death_cannot_eat"), true);
         }
 
     }

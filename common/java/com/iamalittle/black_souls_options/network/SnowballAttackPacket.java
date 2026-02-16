@@ -5,6 +5,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import java.util.UUID;
 
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
+
 /**
  * 雪球攻击网络包
  * 客户端通知服务端执行雪球攻击
@@ -39,7 +41,7 @@ public class SnowballAttackPacket {
         
         // 验证玩家身份
         if (!player.getUUID().equals(packet.getPlayerId())) {
-            System.err.println("[BLACKSOULS] Warning: Snowball attack packet from wrong player");
+            BlackSoulsConfig.warn("Warning: Snowball attack packet from wrong player");
             return;
         }
         

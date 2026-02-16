@@ -1,9 +1,12 @@
 package com.iamalittle.black_souls_options;
 
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import com.iamalittle.black_souls_options.controllers.TargetEntityScreen;
 import com.iamalittle.black_souls_options.contracts.ContractSystem;
 import com.iamalittle.black_souls_options.input.SpitAbilityKeyManager;
 import com.iamalittle.black_souls_options.render.ContractTrackerRenderer;
+import com.iamalittle.black_souls_options.sound.ModSounds;
+import com.iamalittle.black_souls_options.utils.ItemCheckUtils;
 import com.iamalittle.black_souls_options.wrappers.ForgeEvents;
 import com.iamalittle.black_souls_options.forge.ContractEventsForge;
 import com.iamalittle.black_souls_options.forge.network.ForgeContractNetwork;
@@ -29,7 +32,7 @@ public class ModMain {
 
 	public ModMain() {
 		ForgeEvents.setup();
-		logger.info("GalGame related mod initialized");
+		logger.info("BlackSouls Options initialized");
 	}
 
 	@Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
@@ -39,11 +42,15 @@ public class ModMain {
 		public static void onClientSetup(FMLClientSetupEvent event) {
 			ContractTrackerRenderer.setup();
 			
+			// 初始化TOML配置文件
+			BlackSoulsConfig.getInstance();
+			
 			// 初始化契约系统，启动定时更新器
 			ContractSystem.getInstance();
 			
 			// 注册网络处理器
 			ForgeContractNetwork.initialize();
+
 		}
 
 		@SubscribeEvent
@@ -58,10 +65,16 @@ public class ModMain {
 		@SubscribeEvent
 		public static void onEntityInteract(PlayerInteractEvent.EntityInteractSpecific event) {
 			if (event.getEntity().level().isClientSide) {
-					if (event.getEntity().getItemBySlot(EquipmentSlot.HEAD).getItem() == Items.IRON_HELMET) {
+					if (ItemCheckUtils.canOpenInterface(event.getEntity())) {
 						Minecraft.getInstance().setScreen(new TargetEntityScreen(event.getTarget()));
+					} else {
+						// 玩家不满足条件，只在debug模式启用时显示提示信息
+						if (BlackSoulsConfig.getInstance().isEnableDebugMode()) {
+							String requirement = ItemCheckUtils.getRequirementDescription();
+							event.getEntity().displayClientMessage(net.minecraft.network.chat.Component.translatable("black_souls_options.messages.interface_requirement", requirement), true);
+						}
 					}
-			}
+				}
 		}
 		
 		@SubscribeEvent

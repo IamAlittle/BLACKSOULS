@@ -1,8 +1,11 @@
 package com.iamalittle.black_souls_options.contracts;
 
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -38,14 +41,14 @@ public class ContractManager {
             // 客户端创建管理器，使用临时文件路径
             this.isClientSide = true;
             this.saveFile = new File("temp_contracts", player != null ? player.getUUID().toString() + ".dat" : "unknown.dat");
-            System.out.println("[BLACKSOULS] Client ContractManager created for: " + (player != null ? player.getScoreboardName() : "null"));
+            BlackSoulsConfig.debug("[BLACKSOULS] Client ContractManager created for: " + (player != null ? player.getScoreboardName() : "null"));
         } else {
             // 关键修复：检查玩家状态，避免在玩家死亡或无效状态下初始化
             this.isClientSide = false;
             if (player.level().getServer() == null) {
                 // 玩家无效，无法获取服务器路径，使用临时文件路径
                 this.saveFile = new File("temp_contracts", player != null ? player.getUUID().toString() + ".dat" : "unknown.dat");
-                System.err.println("[BLACKSOULS] Warning: ContractManager created for invalid player, using temporary file path");
+                BlackSoulsConfig.warn("[BLACKSOULS] Warning: ContractManager created for invalid player, using temporary file path");
             } else {
                 // 构建保存文件路径：存档路径/playerdata/contracts/玩家uuid.dat
                 File worldDir = player.level().getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).toFile();
@@ -75,8 +78,41 @@ public class ContractManager {
     public void createContract(UUID entityUuid, String entityType, String entityName, Vec3 position, String dimension) {
         // 检查是否在服务器端执行
         if (isClientSide) {
-            System.out.println("[BLACKSOULS] Warning: Attempted to create contract on client side");
+            BlackSoulsConfig.warn("[BLACKSOULS] Warning: Attempted to create contract on client side");
             return;
+        }
+        
+        // 检查是否已存在相同实体类型的契约
+        if (hasContractForEntityType(entityType)) {
+            // 向玩家发送提示消息
+            if (owner != null) {
+                Component message = Component.translatable("black_souls_options.commands.message.contract_already_exists")
+                    .withStyle(style -> style.withColor(TextColor.parseColor("#FF5555")));
+                owner.sendSystemMessage(message);
+            }
+            BlackSoulsConfig.debug("[BLACKSOULS] Contract creation failed: already have contract for entity type: " + entityType);
+            return;
+        }
+        
+        // 检查经验值是否足够（创造模式下不需要消耗魂）
+        int contractCost = BlackSoulsConfig.getInstance().getContractCreationCost();
+        if (owner != null && !owner.isCreative() && owner.totalExperience < contractCost) {
+            // 向玩家发送经验值不足提示消息
+            Component message = Component.translatable("black_souls_options.messages.contract_creation_insufficient_souls")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FF5555")));
+            owner.sendSystemMessage(message);
+            BlackSoulsConfig.debug("[BLACKSOULS] Contract creation failed: not enough experience. Required: " + contractCost + ", Current: " + owner.totalExperience);
+            return;
+        }
+        
+        // 消耗经验值（创造模式下不消耗）
+        if (owner != null && !owner.isCreative()) {
+            owner.giveExperiencePoints(-contractCost);
+            
+            // 向玩家发送经验值消耗提示消息（白色字体）
+            Component message = Component.translatable("black_souls_options.messages.contract_creation_souls_cost", contractCost)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FFFFFF")));
+            owner.sendSystemMessage(message);
         }
         
         Contract contract = new Contract(entityUuid, entityType, entityName, position, dimension);
@@ -87,7 +123,71 @@ public class ContractManager {
         contracts.put(entityUuid, contract);
         markForSave();
         
-        System.out.println("[BLACKSOULS] Contract created on server for entity: " + entityName);
+        BlackSoulsConfig.debug("[BLACKSOULS] Contract created on server for entity: " + entityName);
+    }
+    
+    /**
+     * 通过指令创建契约（使用虚拟实体ID，不会被自动解除）
+     */
+    public void createContractFromCommand(String entityType, String entityName, Vec3 position, String dimension) {
+        // 检查是否在服务器端执行
+        if (isClientSide) {
+            BlackSoulsConfig.warn("[BLACKSOULS] Warning: Attempted to create contract on client side");
+            return;
+        }
+        
+        // 检查是否已存在相同实体类型的契约
+        if (hasContractForEntityType(entityType)) {
+            // 向玩家发送提示消息
+            if (owner != null) {
+                Component message = Component.translatable("black_souls_options.commands.message.contract_already_exists")
+                    .withStyle(style -> style.withColor(TextColor.parseColor("#FF5555")));
+                owner.sendSystemMessage(message);
+            }
+            BlackSoulsConfig.debug("[BLACKSOULS] Command contract creation failed: already have contract for entity type: " + entityType);
+            return;
+        }
+        
+        // 检查经验值是否足够（创造模式下不需要消耗魂）
+        int contractCost = BlackSoulsConfig.getInstance().getContractCreationCost();
+        if (owner != null && !owner.isCreative() && owner.totalExperience < contractCost) {
+            // 向玩家发送经验值不足提示消息
+            Component message = Component.translatable("black_souls_options.messages.contract_creation_insufficient_souls")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FF5555")));
+            owner.sendSystemMessage(message);
+            BlackSoulsConfig.debug("[BLACKSOULS] Command contract creation failed: not enough experience. Required: " + contractCost + ", Current: " + owner.totalExperience);
+            return;
+        }
+        
+        // 消耗经验值（创造模式下不消耗）
+        if (owner != null && !owner.isCreative()) {
+            owner.giveExperiencePoints(-contractCost);
+            
+            // 向玩家发送经验值消耗提示消息（白色字体）
+            Component message = Component.translatable("black_souls_options.messages.contract_creation_souls_cost", contractCost)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FFFFFF")));
+            owner.sendSystemMessage(message);
+        }
+        
+        // 使用随机UUID作为虚拟实体ID
+        UUID entityUuid = UUID.randomUUID();
+        Contract contract = new Contract(entityUuid, entityType, entityName, position, dimension);
+        
+        // 标记为指令创建的契约
+        contract.setCommandCreated(true);
+        
+        // 为契约添加对应的效果
+        addEffectsToContract(contract, entityType);
+        
+        contracts.put(entityUuid, contract);
+        markForSave();
+        
+        // 触发网络同步，确保客户端能显示指令创建的契约
+        if (owner != null && owner instanceof net.minecraft.server.level.ServerPlayer) {
+            com.iamalittle.black_souls_options.network.ContractNetworkHandler.broadcastContractUpdate((net.minecraft.server.level.ServerPlayer) owner);
+        }
+        
+        BlackSoulsConfig.debug("[BLACKSOULS] Command contract created on server for entity: " + entityName);
     }
     
     /**
@@ -95,6 +195,14 @@ public class ContractManager {
      */
     public boolean hasContract(UUID entityId) {
         return contracts.containsKey(entityId);
+    }
+    
+    /**
+     * 检查是否已存在相同实体类型的契约
+     */
+    public boolean hasContractForEntityType(String entityType) {
+        return contracts.values().stream()
+            .anyMatch(contract -> entityType.equals(contract.getEntityType()));
     }
     
     /**
@@ -120,8 +228,16 @@ public class ContractManager {
     public void removeContract(UUID entityId) {
         Contract contract = contracts.get(entityId);
         if (contract != null) {
-            // 停用契约效果
-            contract.deactivateEffects(owner);
+            // 关键修复：对于美西螈契约等需要清理状态的效果，必须调用deactivateEffects而不是deactivateEffectsSilently
+            // deactivateEffectsSilently只是设置isActive=false，不会调用onDeactivate方法
+            // 这会导致装死状态等特殊状态无法正确清理
+            if (owner != null && owner.level() != null && !owner.level().isClientSide()) {
+                // 服务器端：正常停用效果，确保状态正确清理
+                contract.deactivateEffects(owner);
+            } else {
+                // 客户端：静默停用效果，避免消息重复
+                contract.deactivateEffectsSilently(owner);
+            }
         }
         contracts.remove(entityId);
         markForSave();
@@ -182,6 +298,22 @@ public class ContractManager {
             // 更新位置信息
             existing.setEntityPosition(contract.getEntityPosition());
             existing.setTracking(contract.isTracking());
+            
+            // 关键修复：更新效果状态，确保客户端界面能正确显示契约状态变化
+            // 遍历网络契约的所有效果，更新现有契约的对应效果状态
+            List<ContractEffect> networkEffects = contract.getEffects();
+            List<ContractEffect> existingEffects = existing.getEffects();
+            
+            // 确保效果数量一致
+            if (networkEffects.size() == existingEffects.size()) {
+                for (int i = 0; i < networkEffects.size(); i++) {
+                    ContractEffect networkEffect = networkEffects.get(i);
+                    ContractEffect existingEffect = existingEffects.get(i);
+                    
+                    // 更新激活状态
+                    existingEffect.setActive(networkEffect.isActive());
+                }
+            }
         }
     }
     
@@ -262,7 +394,7 @@ public class ContractManager {
     private void loadFromFile() {
         // 检查是否在服务器端执行
         if (isClientSide) {
-            System.out.println("[BLACKSOULS] Warning: Attempted to load contract data on client side");
+            BlackSoulsConfig.warn("[BLACKSOULS] Warning: Attempted to load contract data on client side");
             return;
         }
         
@@ -287,11 +419,11 @@ public class ContractManager {
                 // 这解决了进入游戏时需要重新开关契约的问题
                 if (owner != null && owner.isAlive()) {
                     reactivateActiveEffects(owner);
-                    System.out.println("[BLACKSOULS] Previously active contract effects reactivated after loading: " + owner.getScoreboardName());
+                    BlackSoulsConfig.debug("[BLACKSOULS] Contract data reloaded for player: " + owner.getScoreboardName());
                 }
             }
         } catch (IOException e) {
-            System.err.println("Failed to load contracts from file: " + saveFile.getAbsolutePath());
+            BlackSoulsConfig.error("Failed to load contracts from file: " + saveFile.getAbsolutePath());
             e.printStackTrace();
         }
     }
@@ -302,7 +434,7 @@ public class ContractManager {
     public void saveToFile() {
         // 检查是否在服务器端执行
         if (isClientSide) {
-            System.out.println("[BLACKSOULS] Warning: Attempted to save contract data on client side");
+            BlackSoulsConfig.warn("[BLACKSOULS] Warning: Attempted to save contract data on client side");
             return;
         }
         
@@ -319,9 +451,9 @@ public class ContractManager {
             
             this.needsSave = false;
             this.lastSaveTime = System.currentTimeMillis();
-            System.out.println("[BLACKSOULS] Contract data saved on server for player: " + owner.getScoreboardName());
+            BlackSoulsConfig.debug("[BLACKSOULS] Contract data saved on server for player: " + owner.getScoreboardName());
         } catch (IOException e) {
-            System.err.println("Failed to save contracts to file: " + saveFile.getAbsolutePath());
+            BlackSoulsConfig.error("Failed to save contracts to file: " + saveFile.getAbsolutePath());
             e.printStackTrace();
         }
     }
@@ -339,7 +471,7 @@ public class ContractManager {
     public void forceReload() {
         // 重新加载数据文件
         loadFromFile();
-        System.out.println("[BLACKSOULS] Contract data reloaded for player: " + owner.getScoreboardName());
+        BlackSoulsConfig.debug("[BLACKSOULS] Contract data reloaded for player: " + owner.getScoreboardName());
     }
     
     /**
@@ -350,7 +482,7 @@ public class ContractManager {
             // 重新激活所有契约效果
             contract.activateEffects(player);
         }
-        System.out.println("[BLACKSOULS] All contract effects reactivated for player: " + player.getScoreboardName());
+        BlackSoulsConfig.debug("[BLACKSOULS] All contract effects reactivated for player: " + player.getScoreboardName());
     }
     
     /**
@@ -361,7 +493,7 @@ public class ContractManager {
             // 只重新激活之前已激活的契约效果
             contract.reactivateActiveEffects(player);
         }
-        System.out.println("[BLACKSOULS] Previously active contract effects reactivated for player: " + player.getScoreboardName());
+        BlackSoulsConfig.debug("[BLACKSOULS] Previously active contract effects reactivated for player: " + player.getScoreboardName());
     }
     
     /**
@@ -494,9 +626,20 @@ public class ContractManager {
             }
             
             // 向玩家发送聊天消息通知目标死亡
-            owner.sendSystemMessage(Component.literal("§c您位于 ").append(Component.literal(coordinates).withStyle(ChatFormatting.BOLD))
-                .append("§c 的契约对象【").append(displayName.copy().withStyle(ChatFormatting.BOLD))
-                .append("§c】已死亡，契约消失"));
+            Component coordinatesComponent = Component.literal(coordinates).withStyle(ChatFormatting.BOLD);
+            Component displayNameComponent = displayName.copy().withStyle(ChatFormatting.BOLD);
+            
+            // 创建样式
+            Style redStyle = Style.EMPTY.withColor(TextColor.parseColor("#FF2222"));
+            
+            // 使用本地化消息并应用样式
+            Component message = Component.translatable(
+                "black_souls_options.messages.contract_entity_dead",
+                coordinatesComponent,
+                displayNameComponent
+            ).withStyle(redStyle);
+            
+            owner.sendSystemMessage(message);
             
             // 标记需要保存
             markForSave();
@@ -517,6 +660,11 @@ public class ContractManager {
         
         for (Contract contract : contracts.values()) {
             UUID entityId = contract.getEntityId();
+            
+            // 跳过指令创建的契约，它们使用虚拟实体ID，不应该被自动解除
+            if (contract.isCommandCreated()) {
+                continue;
+            }
             
             // 检查实体是否仍然存在
             boolean entityExists = false;
@@ -616,7 +764,7 @@ public class ContractManager {
             } catch (Exception e) {
                 // 忽略任何异常，保持原位置信息
                 // 这是为了避免在访问受限或出现问题时导致崩溃
-                System.out.println("检查实体存在性时发生异常，保持契约: " + contract.getEntityName());
+                BlackSoulsConfig.debug("检查实体存在性时发生异常，保持契约: " + contract.getEntityName());
             }
         }
         

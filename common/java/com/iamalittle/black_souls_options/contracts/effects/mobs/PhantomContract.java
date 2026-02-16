@@ -7,6 +7,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.network.chat.TextColor;
 
 import java.util.*;
 
@@ -18,8 +19,8 @@ import java.util.*;
  */
 public class PhantomContract extends ContractEffect {
     private static final String EFFECT_ID = "phantom_elytra_repair";
-    private static final String DISPLAY_NAME = "幻翼";
-    private static final String DESCRIPTION = "自动恢复鞘翅耐久度";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.phantom.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.phantom.description";
     
     // 幻翼契约玩家集合
     private static final Set<UUID> phantomContractPlayers = new HashSet<>();
@@ -133,10 +134,14 @@ public class PhantomContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6幻翼契约效果："));
-        details.add(Component.literal("§7- 自动恢复身上鞘翅的耐久度"));
-        details.add(Component.literal("§7- 每10秒恢复1点耐久"));
-        details.add(Component.literal("§7- 每次恢复消耗10点经验值"));
+        details.add(Component.translatable("black_souls_options.contracts.phantom.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.phantom.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.phantom.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.phantom.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

@@ -4,9 +4,9 @@
   "version": "${version}",
 
   "name": "Black Souls:Options",
-  "description": "A GalGame related mod that displays entity HUD information when right-clicking on entities. Press ESC to clear the displayed HUD.",
+  "description": "BlackSouls 2 的同人mod，主要还原选项功能和为每个生物添加契约。",
   "authors": [
-    "iamalittle"
+    "IamAlittle"
   ],
   "contact": {
     "homepage": "",

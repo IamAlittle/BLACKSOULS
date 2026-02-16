@@ -5,15 +5,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 
 import java.util.*;
 
@@ -23,23 +26,14 @@ import java.util.*;
  */
 public class BeeContract extends ContractEffect {
     private static final String EFFECT_ID = "bee_pollen_spreader";
-    private static final String DISPLAY_NAME = "蜜蜂花粉传播者";
-    private static final String DESCRIPTION = "携带花朵时产生花粉粒子，为周围作物授粉";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.bee.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.bee.description";
     
-    // 花朵物品列表
-    private static final Set<Item> FLOWER_ITEMS = Set.of(
-        Items.POPPY, Items.DANDELION, Items.BLUE_ORCHID, Items.ALLIUM,
-        Items.AZURE_BLUET, Items.RED_TULIP, Items.ORANGE_TULIP, Items.WHITE_TULIP,
-        Items.PINK_TULIP, Items.OXEYE_DAISY, Items.CORNFLOWER, Items.LILY_OF_THE_VALLEY,
-        Items.WITHER_ROSE, Items.SUNFLOWER, Items.LILAC, Items.ROSE_BUSH,
-        Items.PEONY, Items.CHORUS_FLOWER
-    );
+    // 花朵物品标签
+    private static final TagKey<Item> FLOWER_ITEMS = ItemTags.FLOWERS;
     
-    // 可授粉的作物列表
-    private static final Set<Block> POLLINATABLE_CROPS = Set.of(
-        Blocks.WHEAT, Blocks.CARROTS, Blocks.POTATOES, Blocks.BEETROOTS,
-        Blocks.MELON_STEM, Blocks.PUMPKIN_STEM
-    );
+    // 可授粉的作物列表（使用作物标签）
+    private static final TagKey<Block> POLLINATABLE_CROPS = BlockTags.CROPS;
     
     // 花粉粒子效果冷却时间（毫秒）
     private static final long POLLEN_PARTICLE_COOLDOWN = 200L;
@@ -107,12 +101,12 @@ public class BeeContract extends ContractEffect {
     }
     
     /**
-     * 检查玩家物品栏中是否有花朵
+     * 检查玩家物品栏中是否有花朵（使用物品标签）
      */
     private boolean hasFlowerInInventory(Player player) {
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-            Item item = player.getInventory().getItem(i).getItem();
-            if (FLOWER_ITEMS.contains(item)) {
+            var itemStack = player.getInventory().getItem(i);
+            if (!itemStack.isEmpty() && itemStack.is(FLOWER_ITEMS)) {
                 return true;
             }
         }
@@ -180,10 +174,10 @@ public class BeeContract extends ContractEffect {
     }
     
     /**
-     * 检查方块是否为可授粉的作物
+     * 检查方块是否为可授粉的作物（使用花朵标签）
      */
     private boolean isPollinatableCrop(BlockState blockState) {
-        return POLLINATABLE_CROPS.contains(blockState.getBlock());
+        return blockState.is(POLLINATABLE_CROPS);
     }
     
     /**
@@ -237,12 +231,12 @@ public class BeeContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6蜜蜂契约效果："));
-        details.add(Component.literal("§7花粉传播者"));
-        details.add(Component.literal("§7- 携带花朵时产生花粉粒子"));
-        details.add(Component.literal("§7- 为周围1格内的作物授粉"));
-        details.add(Component.literal("§7- 授粉效果类似骨粉，加速作物生长"));
-        details.add(Component.literal("§7- 需要花朵在背包中才能生效"));
+        details.add(Component.translatable("black_souls_options.contracts.bee.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.bee.pollen_spreader").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.bee.pollen_particles").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.bee.pollination_range").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.bee.bone_meal_effect").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.bee.requires_flowers").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

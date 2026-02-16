@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -25,8 +26,8 @@ import java.util.UUID;
  */
 public class StrayContract extends ContractEffect {
     private static final String EFFECT_ID = "stray_slowness_arrows";
-    private static final String DISPLAY_NAME = "迟缓之箭";
-    private static final String DESCRIPTION = "射出的箭矢会变成迟缓之箭";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.stray.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.stray.description";
     
     // 存储拥有流浪者契约的玩家UUID
     private static final Set<UUID> strayContractPlayers = new HashSet<>();
@@ -128,30 +129,14 @@ public class StrayContract extends ContractEffect {
         return arrowStack.getItem() == Items.TIPPED_ARROW || 
                arrowStack.getItem() == Items.SPECTRAL_ARROW;
     }
-    
-    /**
-     * 获取玩家背包中的特殊箭矢（如果有）
-     */
-    public static ItemStack getSpecialArrowFromInventory(Player player) {
-        if (player == null) return ItemStack.EMPTY;
-        
-        // 优先查找玩家背包中的特殊箭矢
-        for (ItemStack stack : player.getInventory().items) {
-            if (!stack.isEmpty() && isSpecialArrow(stack)) {
-                return stack;
-            }
-        }
-        
-        return ItemStack.EMPTY;
-    }
 
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6流浪者迟缓之箭效果："));
-        details.add(Component.literal("§a射出的箭矢会变成迟缓之箭"));
-        details.add(Component.literal("§a迟缓效果持续5秒"));
-        details.add(Component.literal("§7使被击中的目标移动速度降低"));
+        details.add(Component.translatable("black_souls_options.contracts.stray.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.stray.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.stray.effect2").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.stray.effect3").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 

@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -29,8 +30,8 @@ import java.util.UUID;
  */
 public class BlazeContract extends ContractEffect {
     private static final String EFFECT_ID = "blaze_fire_bender";
-    private static final String DISPLAY_NAME = "点燃";
-    private static final String DESCRIPTION = "攻击点燃目标，水中/雨天扣血";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.blaze.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.blaze.description";
     
     // 点燃持续时间（秒）
     private static final int BURN_DURATION = 5;
@@ -158,11 +159,11 @@ public class BlazeContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6烈焰人契约效果："));
-        details.add(Component.literal("§7点燃"));
-        details.add(Component.literal("§7- 攻击时点燃目标，持续" + BURN_DURATION + "秒"));
-        details.add(Component.literal("§c- 水中或暴露在雨天会受到伤害"));
-        details.add(Component.literal("§c- 每1秒受到" + DAMAGE_AMOUNT + "点火焰伤害"));
+        details.add(Component.translatable("black_souls_options.contracts.blaze.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.blaze.ignite_effect").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.blaze.attack_ignite", BURN_DURATION).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.blaze.water_damage").withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
+        details.add(Component.translatable("black_souls_options.contracts.blaze.damage_amount", DAMAGE_AMOUNT).withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
         return details;
     }
     

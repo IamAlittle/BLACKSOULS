@@ -7,6 +7,7 @@ import com.iamalittle.black_souls_options.network.EffectTogglePacket;
 import com.iamalittle.black_souls_options.network.FeignDeathSyncPacket;
 import com.iamalittle.black_souls_options.network.RandomSoundPacket;
 import com.iamalittle.black_souls_options.network.SnowballAttackPacket;
+import com.iamalittle.black_souls_options.network.KillAttackPacket;
 import com.iamalittle.black_souls_options.network.SpitAttackPacket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -83,6 +84,12 @@ public class ForgeContractNetwork {
             SnowballAttackPacket::encode,
             SnowballAttackPacket::new,
             ForgeContractNetwork::handleSnowballAttackPacket
+        );
+        
+        INSTANCE.registerMessage(packetId++, KillAttackPacket.class,
+            KillAttackPacket::encode,
+            KillAttackPacket::new,
+            ForgeContractNetwork::handleKillAttackPacket
         );
     }
     
@@ -221,6 +228,23 @@ public class ForgeContractNetwork {
     }
     
     /**
+     * 处理接收到的杀害攻击请求数据包
+     */
+    private static void handleKillAttackPacket(KillAttackPacket packet, Supplier<NetworkEvent.Context> context) {
+        NetworkEvent.Context ctx = context.get();
+        
+        if (ctx.getDirection() == NetworkDirection.PLAY_TO_SERVER) {
+            // 服务器端处理
+            ctx.enqueueWork(() -> {
+                ServerPlayer player = ctx.getSender();
+                com.iamalittle.black_souls_options.network.ContractNetworkHandler.handleKillAttackRequest(player, packet);
+            });
+        }
+        
+        ctx.setPacketHandled(true);
+    }
+    
+    /**
      * 向玩家发送契约同步数据包
      */
     public static void sendToPlayer(ServerPlayer player, ContractSyncPacket packet) {
@@ -277,6 +301,13 @@ public class ForgeContractNetwork {
      * 客户端发送雪球攻击请求到服务器
      */
     public static void sendSnowballAttackRequest(SnowballAttackPacket packet) {
+        INSTANCE.sendToServer(packet);
+    }
+    
+    /**
+     * 客户端发送杀害攻击请求到服务器
+     */
+    public static void sendKillAttackRequest(KillAttackPacket packet) {
         INSTANCE.sendToServer(packet);
     }
 }

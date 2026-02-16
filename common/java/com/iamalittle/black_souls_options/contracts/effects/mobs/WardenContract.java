@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import com.iamalittle.black_souls_options.render.WardenBlockHighlighter;
 import net.minecraft.core.particles.VibrationParticleOption;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -26,8 +27,8 @@ import java.util.*;
  */
 public class WardenContract extends ContractEffect {
     private static final String EFFECT_ID = "warden_vibration_glow";
-    private static final String DISPLAY_NAME = "感知";
-    private static final String DESCRIPTION = "使用振动系统感知周围环境，使振动源获得发光效果";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.warden.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.warden.description";
     
     // 监守者契约玩家集合
     private static final Map<UUID, WardenVibrationListener> wardenContractListeners = new HashMap<>();
@@ -208,16 +209,26 @@ public class WardenContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6监守者契约效果："));
-        details.add(Component.literal("§7 感知"));
-        details.add(Component.literal("§7- 获得黑暗和失明效果"));
-        details.add(Component.literal("§7- 当检测到振动时，使振动源获得发光效果"));
-        details.add(Component.literal("§7- 检测范围：" + VIBRATION_DETECTION_RANGE + "格"));
-        details.add(Component.literal("§7- 激活时循环播放心跳声"));
-        details.add(Component.literal("§7- 探测到目标时播放触手点击声"));
-        details.add(Component.literal("§7- 被探测目标听到近距离音效"));
-        details.add(Component.literal("§7- 获得35%移动速度提升"));
-        details.add(Component.literal("§7- 失明状态下不可疾跑，看不见路不敢走很正常"));
+        details.add(Component.translatable("black_souls_options.contracts.warden.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.warden.effect_subtitle")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.warden.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.warden.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.warden.effect3", VIBRATION_DETECTION_RANGE)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.warden.effect4")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.warden.effect5")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.warden.effect6")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.warden.effect7")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.warden.effect8")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

@@ -6,7 +6,9 @@ import com.iamalittle.black_souls_options.network.EffectTogglePacket;
 import com.iamalittle.black_souls_options.network.FeignDeathSyncPacket;
 import com.iamalittle.black_souls_options.network.RandomSoundPacket;
 import com.iamalittle.black_souls_options.network.SnowballAttackPacket;
+import com.iamalittle.black_souls_options.network.KillAttackPacket;
 import com.iamalittle.black_souls_options.network.SpitAttackPacket;
+import com.iamalittle.black_souls_options.network.ContractNetworkHandler;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -25,6 +27,7 @@ public class FabricContractNetwork {
     public static final ResourceLocation SPIT_ATTACK_PACKET_ID = new ResourceLocation("black_souls_options", "spit_attack");
     public static final ResourceLocation RANDOM_SOUND_PACKET_ID = new ResourceLocation("black_souls_options", "random_sound");
     public static final ResourceLocation SNOWBALL_ATTACK_PACKET_ID = new ResourceLocation("black_souls_options", "snowball_attack");
+    public static final ResourceLocation KILL_ATTACK_PACKET_ID = new ResourceLocation("black_souls_options", "kill_attack");
     
     /**
      * 注册网络处理器
@@ -64,6 +67,14 @@ public class FabricContractNetwork {
             SnowballAttackPacket packet = new SnowballAttackPacket(buf);
             server.execute(() -> {
                 SnowballAttackPacket.handle(packet, player);
+            });
+        });
+        
+        // 注册杀害攻击请求处理器
+        ServerPlayNetworking.registerGlobalReceiver(KILL_ATTACK_PACKET_ID, (server, player, handler, buf, responseSender) -> {
+            KillAttackPacket packet = new KillAttackPacket(buf);
+            server.execute(() -> {
+                ContractNetworkHandler.handleKillAttackRequest(player, packet);
             });
         });
         
@@ -142,6 +153,16 @@ public class FabricContractNetwork {
         packet.encode(buf);
         
         ClientPlayNetworking.send(SNOWBALL_ATTACK_PACKET_ID, buf);
+    }
+    
+    /**
+     * 客户端发送杀害攻击请求到服务器
+     */
+    public static void sendKillAttackRequest(KillAttackPacket packet) {
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        packet.encode(buf);
+        
+        ClientPlayNetworking.send(KILL_ATTACK_PACKET_ID, buf);
     }
     
     /**

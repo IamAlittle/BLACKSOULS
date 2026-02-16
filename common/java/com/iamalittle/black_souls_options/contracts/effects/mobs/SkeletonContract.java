@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -17,8 +18,8 @@ import java.util.UUID;
  */
 public class SkeletonContract extends ContractEffect {
     private static final String EFFECT_ID = "skeleton_infinite_arrows";
-    private static final String DISPLAY_NAME = "无限箭矢";
-    private static final String DESCRIPTION = "生存模式下无限拉弓射箭";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.skeleton.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.skeleton.description";
     
     // 存储拥有骷髅契约的玩家UUID
     private static final List<UUID> skeletonContractPlayers = new ArrayList<>();
@@ -83,28 +84,16 @@ public class SkeletonContract extends ContractEffect {
         // 检查是否有骷髅契约
         return hasSkeletonContract(player);
     }
-    
-    /**
-     * 获取玩家的箭矢（如果有骷髅契约，即使没有箭矢也返回默认箭矢）
-     */
-    public static ItemStack getInfiniteArrowStack(Player player) {
-        // 获取玩家的箭矢
-        ItemStack arrowStack = player.getProjectile(new ItemStack(Items.BOW));
-        
-        // 如果有骷髅契约但没有箭矢，返回默认箭矢
-        if (hasSkeletonContract(player) && arrowStack.isEmpty()) {
-            return new ItemStack(Items.ARROW);
-        }
-        
-        return arrowStack;
-    }
 
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b骷髅无限箭矢效果："));
-        details.add(Component.literal("§a生存模式下无限拉弓射箭"));
-        details.add(Component.literal("§a不需要消耗箭矢"));
+        details.add(Component.translatable("black_souls_options.contracts.skeleton.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.skeleton.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.skeleton.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 

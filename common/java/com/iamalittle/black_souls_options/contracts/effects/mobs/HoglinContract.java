@@ -12,6 +12,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.network.chat.TextColor;
 
 import java.util.*;
 
@@ -23,8 +24,8 @@ import java.util.*;
  */
 public class HoglinContract extends ContractEffect {
     private static final String EFFECT_ID = "hoglin_knockback_resistance";
-    private static final String DISPLAY_NAME = "疣猪兽";
-    private static final String DESCRIPTION = "减少50%受到的击退效果，周围有诡异菇时缓慢";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.hoglin.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.hoglin.description";
     
     // 击退抗性增加比例（减少50%受到的击退效果）
     private static final double KNOCKBACK_RESISTANCE_BOOST = 0.5;
@@ -240,9 +241,12 @@ public class HoglinContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6疣猪兽契约效果："));
-        details.add(Component.literal("§7- 减少50%击退抗性"));
-        details.add(Component.literal("§c- 周围" + WARPED_FUNGUS_DETECTION_RANGE + "格内有诡异菇时获得缓慢效果"));
+        details.add(Component.translatable("black_souls_options.contracts.hoglin.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.hoglin.effect1", (int)(KNOCKBACK_RESISTANCE_BOOST * 100))
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.hoglin.negative_effect", WARPED_FUNGUS_DETECTION_RANGE)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
         return details;
     }
 }

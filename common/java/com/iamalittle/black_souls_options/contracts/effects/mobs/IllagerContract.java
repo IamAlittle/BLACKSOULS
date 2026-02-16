@@ -6,6 +6,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.TextColor;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,9 +22,9 @@ import java.util.UUID;
  */
 public class IllagerContract extends ContractEffect {
     private static final String EFFECT_ID = "illager_bad_omen";
-    private static final String DISPLAY_NAME = "不祥之兆";
-    private static final String DESCRIPTION = "时刻获得不祥之兆效果";
-    
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.illager.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.illager.description";
+
     // 掠夺者契约玩家集合
     private static final Set<UUID> illagerContractPlayers = new HashSet<>();
     
@@ -38,7 +39,7 @@ public class IllagerContract extends ContractEffect {
     protected void onActivate(Player player, boolean sendMessage) {
         if (player != null) {
             illagerContractPlayers.add(player.getUUID());
-            
+
             // 施加不祥之兆效果
             applyBadOmenEffect(player);
             
@@ -57,7 +58,7 @@ public class IllagerContract extends ContractEffect {
     protected void onDeactivate(Player player) {
         if (player != null) {
             illagerContractPlayers.remove(player.getUUID());
-            
+
             // 移除不祥之兆效果
             removeBadOmenEffect(player);
             
@@ -148,19 +149,17 @@ public class IllagerContract extends ContractEffect {
         return player != null && illagerContractPlayers.contains(player.getUUID());
     }
     
-    /**
-     * 获取掠夺者契约玩家集合
-     */
-    public static Set<UUID> getIllagerContractPlayers() {
-        return new HashSet<>(illagerContractPlayers);
-    }
-    
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6时刻获得不祥之兆效果（等级1）"));
-        details.add(Component.literal("§6允许随时触发袭击事件"));
-        details.add(Component.literal("§6进入村庄时自动开始袭击"));
+        details.add(Component.translatable("black_souls_options.contracts.illager.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.illager.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.illager.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.illager.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import com.iamalittle.black_souls_options.client.TitleScreenCharacterRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.*;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -51,6 +52,9 @@ public class FabricEvents {
         WorldRenderEvents.LAST.register(context -> {
             Events.RenderWorldLast.trigger(new RenderWorldLastEvent(context.matrixStack(), context.tickDelta(), context.projectionMatrix()));
         });
+        
+        // 标题界面像素小人渲染由Mixin处理
+        // 请参考 TitleScreenMixin.java
         ClientChunkEvents.CHUNK_LOAD.register((level, chunk) -> {
             Events.ChunkLoaded.trigger();
         });

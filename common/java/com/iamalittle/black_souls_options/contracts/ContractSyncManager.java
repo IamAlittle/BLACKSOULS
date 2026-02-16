@@ -3,6 +3,8 @@ package com.iamalittle.black_souls_options.contracts;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
+
 /**
  * 契约效果同步管理器
  * 处理玩家死亡/重生时的契约效果状态同步
@@ -15,7 +17,7 @@ public class ContractSyncManager {
      */
     public static void syncContractEffects(ServerPlayer player) {
         if (player == null || player.level() == null || player.level().isClientSide()) {
-            System.out.println("[BLACKSOULS] Warning: Attempted to sync contract effects on client side");
+            BlackSoulsConfig.warn("Attempted to sync contract effects on client side");
             return;
         }
         
@@ -25,13 +27,13 @@ public class ContractSyncManager {
             if (manager.getContractCount() == 0) {
                 // 如果契约数量为0，重新加载数据
                 manager.forceReload();
-                System.out.println("[BLACKSOULS] Contract data reloaded for player: " + player.getScoreboardName());
+                BlackSoulsConfig.debug("Contract data reloaded for player: " + player.getScoreboardName());
             }
             
             // 关键修复：重生时只重新激活之前已激活的契约效果
             // 避免激活所有契约，包括那些玩家手动关闭的契约
             manager.reactivateActiveEffects(player);
-            System.out.println("[BLACKSOULS] Active contract effects reactivated for player: " + player.getScoreboardName());
+            BlackSoulsConfig.debug("Active contract effects reactivated for player: " + player.getScoreboardName());
         }
     }
     
@@ -60,7 +62,7 @@ public class ContractSyncManager {
      */
     public static void syncContractDataToClient(ServerPlayer player) {
         if (player == null || player.level() == null || player.level().isClientSide()) {
-            System.out.println("[BLACKSOULS] Warning: Attempted to sync contract data on client side");
+            BlackSoulsConfig.warn("Attempted to sync contract data on client side");
             return;
         }
         
@@ -71,9 +73,9 @@ public class ContractSyncManager {
                 Class<?> networkHandlerClass = Class.forName("com.iamalittle.black_souls_options.network.ContractNetworkHandler");
                 java.lang.reflect.Method method = networkHandlerClass.getMethod("sendContractDataToPlayer", ServerPlayer.class, boolean.class);
                 method.invoke(null, player, true); // true表示全量同步
-                System.out.println("[BLACKSOULS] Contract data synced to client for player: " + player.getScoreboardName());
+                BlackSoulsConfig.debug("Contract data synced to client for player: " + player.getScoreboardName());
             } catch (Exception e) {
-                System.err.println("[BLACKSOULS] Failed to sync contract data to client: " + e.getMessage());
+                BlackSoulsConfig.error("Failed to sync contract data to client: " + e.getMessage());
             }
         });
     }

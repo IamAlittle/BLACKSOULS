@@ -5,6 +5,7 @@ import com.iamalittle.black_souls_options.contracts.ContractDetector;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -26,8 +27,8 @@ import java.util.*;
  */
 public class SnowGolemContract extends ContractEffect {
     private static final String EFFECT_ID = "snow_golem_snowball_attack";
-    private static final String DISPLAY_NAME = "雪傀儡";
-    private static final String DESCRIPTION = "可以发射雪球攻击敌人";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.snow_golem.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.snow_golem.description";
     
     // 雪傀儡契约玩家集合
     private static final Set<UUID> snowGolemContractPlayers = new HashSet<>();
@@ -165,10 +166,10 @@ public class SnowGolemContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6雪傀儡契约效果："));
-        details.add(Component.literal("§7- 可以像雪傀儡一样发射雪球攻击敌人"));
-        details.add(Component.literal("§7- 移动时在脚底生成雪片"));
-        details.add(Component.literal("§7- 0.5点伤害：）"));
+        details.add(Component.translatable("black_souls_options.contracts.snow_golem.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.snow_golem.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.snow_golem.effect2").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.snow_golem.effect3").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

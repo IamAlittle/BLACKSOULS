@@ -2,6 +2,8 @@ package com.iamalittle.black_souls_options.contracts;
 
 import net.minecraft.world.entity.player.Player;
 
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
+
 /**
  * 契约管理器帮助类，用于正确区分客户端和服务器端的契约管理器使用
  */
@@ -68,7 +70,7 @@ public class ContractManagerHelper {
         
         // 获取服务器端的契约数据（通过网络同步）
         // 这里需要网络同步逻辑，暂时留空
-        System.out.println("[BLACKSOULS] Contract sync requested for client player: " + player.getScoreboardName());
+        BlackSoulsConfig.debug("Contract sync requested for client player: " + player.getScoreboardName());
     }
     
     /**
@@ -80,6 +82,6 @@ public class ContractManagerHelper {
         }
         
         ClientContractManager.getInstance().removeClientContractManager(player.getUUID());
-        System.out.println("[BLACKSOULS] Client contracts cleaned up for player: " + player.getScoreboardName());
+        BlackSoulsConfig.debug("Client contracts cleaned up for player: " + player.getScoreboardName());
     }
 }

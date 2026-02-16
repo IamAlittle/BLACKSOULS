@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.TextColor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -18,8 +19,8 @@ import java.util.UUID;
  */
 public class HorseContract extends ContractEffect {
     private static final String EFFECT_ID = "horse_auto_step";
-    private static final String DISPLAY_NAME = "自动上坡";
-    private static final String DESCRIPTION = "可以自动跨越1格高的方块";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.horse.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.horse.description";
     
     // 马契约玩家集合
     private static final Set<UUID> horseContractPlayers = new HashSet<>();
@@ -66,8 +67,10 @@ public class HorseContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6契约效果："));
-        details.add(Component.literal("§7可以像半砖和楼梯那样自动上坡"));
+        details.add(Component.translatable("black_souls_options.contracts.horse.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.horse.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

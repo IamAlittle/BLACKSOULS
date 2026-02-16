@@ -2,6 +2,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -16,8 +17,8 @@ import java.util.*;
  */
 public class WitherSkeletonContract extends ContractEffect {
     private static final String EFFECT_ID = "wither_skeleton_wither";
-    private static final String DISPLAY_NAME = "凋零";
-    private static final String DESCRIPTION = "攻击时对目标施加凋零效果";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.wither_skeleton.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.wither_skeleton.description";
     
     // 凋零效果参数
     private static final int WITHER_DURATION = 100; // 凋零持续时间（tick，约5秒）
@@ -109,11 +110,16 @@ public class WitherSkeletonContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6凋零骷髅契约效果："));
-        details.add(Component.literal("§7 凋零"));
-        details.add(Component.literal("§7- 攻击时有" + (int)(WITHER_CHANCE * 100) + "%概率对目标施加凋零效果"));
-        details.add(Component.literal("§7- 凋零持续时间：5秒"));
-        details.add(Component.literal("§7- 凋零效果等级：1"));
+        details.add(Component.translatable("black_souls_options.contracts.wither_skeleton.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.wither_skeleton.effect_subtitle")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.wither_skeleton.effect1", (int)(WITHER_CHANCE * 100))
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.wither_skeleton.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.wither_skeleton.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

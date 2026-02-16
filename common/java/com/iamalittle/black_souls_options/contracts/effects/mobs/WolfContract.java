@@ -1,6 +1,7 @@
 package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -9,6 +10,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.network.chat.TextColor;
 
 import java.util.*;
 
@@ -20,8 +22,8 @@ import java.util.*;
  */
 public class WolfContract extends ContractEffect {
     private static final String EFFECT_ID = "wolf_tame_wolves";
-    private static final String DISPLAY_NAME = "狼群领袖";
-    private static final String DESCRIPTION = "自动驯服周围的野生狼";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.wolf.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.wolf.description";
     
     // 驯服范围（格数）
     private static final double VERTICAL_RANGE = 5.0;    // 垂直距离5格
@@ -171,16 +173,9 @@ public class WolfContract extends ContractEffect {
             
             return true;
         } catch (Exception e) {
-            System.err.println("[Wolf Contract] Failed to tame wolf: " + e.getMessage());
+            BlackSoulsConfig.error("[Wolf Contract] Failed to tame wolf: " + e.getMessage());
             return false;
         }
-    }
-    
-    /**
-     * 检查玩家是否拥有狼契约效果
-     */
-    public static boolean hasWolfContract(Player player) {
-        return player != null && wolfContractPlayers.contains(player.getUUID());
     }
     
     /**
@@ -195,8 +190,10 @@ public class WolfContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6狼契约效果："));
-        details.add(Component.literal("§a- 自动驯服周围10格内的野生狼"));
+        details.add(Component.translatable("black_souls_options.contracts.wolf.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.wolf.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 

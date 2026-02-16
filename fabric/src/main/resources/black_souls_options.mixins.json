@@ -39,7 +39,8 @@
     "MixinLevelRenderer",
     "MixinPauseScreen",
     "MixinLivingEntity",
-    "PlayerRendererMixin"
+    "PlayerRendererMixin",
+    "TitleScreenMixin"
   ],
   "server": []
 }

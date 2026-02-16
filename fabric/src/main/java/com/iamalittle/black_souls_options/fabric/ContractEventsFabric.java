@@ -11,6 +11,7 @@ import com.iamalittle.black_souls_options.contracts.effects.mobs.CreeperContract
 import com.iamalittle.black_souls_options.contracts.effects.mobs.GlowSquidContract;
 import com.iamalittle.black_souls_options.contracts.effects.AttackEventHandler;
 import com.iamalittle.black_souls_options.contracts.effects.BlockBreakEventHandler;
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -51,7 +52,7 @@ public class ContractEventsFabric {
                 ContractSyncManager.onPlayerJoin((ServerPlayer) listener.player);
             }
             
-            System.out.println("[BLACKSOULS] Contract manager created for player: " + listener.player.getScoreboardName());
+            BlackSoulsConfig.debug("Contract manager created for player: " + listener.player.getScoreboardName());
         });
         
         // 玩家退出游戏时移除契约管理器并保存数据
@@ -60,7 +61,7 @@ public class ContractEventsFabric {
             cleanupGlowSquidLightBlocks(listener.player);
             
             GlobalContractManager.getInstance().removeServerContractManager(listener.player.getUUID());
-            System.out.println("[BLACKSOULS] Contract manager removed for player: " + listener.player.getScoreboardName());
+            BlackSoulsConfig.debug("Contract manager removed for player: " + listener.player.getScoreboardName());
         });
         
 
@@ -77,7 +78,7 @@ public class ContractEventsFabric {
                     // 同步契约效果状态
                     ContractSyncManager.syncContractEffects(player);
                     
-                    System.out.println("[BLACKSOULS] Player respawn detected: " + player.getScoreboardName());
+                    BlackSoulsConfig.debug("Player respawn detected: " + player.getScoreboardName());
                 }
             }
         });
@@ -130,7 +131,7 @@ public class ContractEventsFabric {
                             
                             // 移除停用所有契约效果的逻辑，让契约在玩家死亡后保持状态
                             // 不再调用 contract.deactivateEffects(player)
-                            System.out.println("[BLACKSOULS] Contract effects maintained on player death: " + player.getScoreboardName());
+                            BlackSoulsConfig.debug("Contract effects maintained on player death: " + player.getScoreboardName());
                         }
                 }
             }
@@ -140,12 +141,16 @@ public class ContractEventsFabric {
     
     private static void onServerStarting(MinecraftServer server) {
         GlobalContractManager.getInstance().setServer(server);
-        System.out.println("[BLACKSOULS] Contract system initialized for server");
+        
+        // 注册契约管理指令
+        registerContractCommands(server);
+        
+        BlackSoulsConfig.debug("Contract system initialized for server");
     }
     
     private static void onServerStopping(MinecraftServer server) {
         GlobalContractManager.getInstance().onServerStopping();
-        System.out.println("[BLACKSOULS] Contract system saved all data on server shutdown");
+        BlackSoulsConfig.debug("Contract system saved all data on server shutdown");
     }
     
     private static void onServerTick(MinecraftServer server) {
@@ -163,7 +168,7 @@ public class ContractEventsFabric {
         
         // 调用发光鱿鱼契约的清理方法
         GlowSquidContract.cleanupPlayerLightBlocks(player);
-        System.out.println("[BLACKSOULS] Cleaned up glow squid light blocks for player: " + player.getScoreboardName());
+        BlackSoulsConfig.debug("Cleaned up glow squid light blocks for player: " + player.getScoreboardName());
     }
     
     /**
@@ -179,6 +184,21 @@ public class ContractEventsFabric {
         // 调用客户端管理器的playerTick方法
         if (manager != null) {
             manager.playerTick(minecraft);
+        }
+    }
+    
+    /**
+     * 注册契约管理指令
+     */
+    private static void registerContractCommands(MinecraftServer server) {
+        try {
+            // 使用反射调用BSContractCommand的注册方法
+            Class<?> commandClass = Class.forName("com.iamalittle.black_souls_options.commands.BSContractCommand");
+            java.lang.reflect.Method registerMethod = commandClass.getMethod("register", MinecraftServer.class);
+            registerMethod.invoke(null, server);
+            BlackSoulsConfig.debug("Contract commands registered successfully");
+        } catch (Exception e) {
+            BlackSoulsConfig.error("Failed to register contract commands: " + e.getMessage());
         }
     }
 }

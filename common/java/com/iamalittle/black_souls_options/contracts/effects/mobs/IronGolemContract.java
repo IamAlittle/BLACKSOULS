@@ -7,6 +7,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.TextColor;
 
 import java.util.*;
 
@@ -18,8 +19,8 @@ import java.util.*;
  */
 public class IronGolemContract extends ContractEffect {
     private static final String EFFECT_ID = "iron_golem_knockback_immunity";
-    private static final String DISPLAY_NAME = "铁傀儡";
-    private static final String DESCRIPTION = "百分百免疫击退";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.iron_golem.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.iron_golem.description";
     
     // 击退抗性目标值（100%免疫）
     private static final double KNOCKBACK_RESISTANCE_TARGET = 1.0;
@@ -133,13 +134,6 @@ public class IronGolemContract extends ContractEffect {
         }
     }
     
-    /**
-     * 检查玩家是否拥有铁傀儡契约效果
-     */
-    public static boolean hasIronGolemContract(Player player) {
-        return player != null && ironGolemContractPlayers.contains(player.getUUID());
-    }
-    
     @Override
     protected long getTickInterval() {
         return 20; // 每20tick（1秒）检测一次
@@ -148,9 +142,12 @@ public class IronGolemContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6铁傀儡契约效果："));
-        details.add(Component.literal("§7- 完全免疫击退效果"));
-        details.add(Component.literal("§7- 获得100%击退抗性"));
+        details.add(Component.translatable("black_souls_options.contracts.iron_golem.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.iron_golem.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.iron_golem.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

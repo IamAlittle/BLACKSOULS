@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 
 /**
@@ -20,8 +21,8 @@ import java.util.*;
  */
 public class GuardianThornsContract extends ContractEffect {
     private static final String EFFECT_ID = "guardian_thorns";
-    private static final String DISPLAY_NAME = "反伤";
-    private static final String DESCRIPTION = "被攻击时对攻击者造成2点反伤伤害";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.guardian_thorns.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.guardian_thorns.description";
     
     // 反伤参数
     private static final float THORNS_DAMAGE = 2.0f; // 反伤伤害值
@@ -106,20 +107,13 @@ public class GuardianThornsContract extends ContractEffect {
         return player != null && thornsContractPlayers.contains(player.getUUID());
     }
     
-    protected void readAdditionalSaveData(CompoundTag compoundTag) {
-        // 读取额外的保存数据（如果需要）
-    }
-    
-    protected void addAdditionalSaveData(CompoundTag compoundTag) {
-        // 保存额外的数据（如果需要）
-    }
-    
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6守卫者反伤契约效果："));
-        details.add(Component.literal("§7- 被攻击时对攻击者造成2点反伤伤害"));
-
+        details.add(Component.translatable("black_souls_options.contracts.guardian_thorns.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.guardian_thorns.effect1", THORNS_DAMAGE)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

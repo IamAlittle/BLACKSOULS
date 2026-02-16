@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -27,8 +28,8 @@ import java.util.UUID;
  */
 public class SilverfishContract extends ContractEffect {
     private static final String EFFECT_ID = "silverfish_stone_breaker";
-    private static final String DISPLAY_NAME = "石头破坏者";
-    private static final String DESCRIPTION = "秒破坏石头类方块";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.silverfish.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.silverfish.description";
     
     // 蠹虫契约玩家集合
     private static final Set<UUID> silverfishContractPlayers = new HashSet<>();
@@ -211,12 +212,14 @@ public class SilverfishContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6蠹虫契约效果："));
-        details.add(Component.literal("§7石头破坏者"));
-        details.add(Component.literal("§7- 能够秒破坏石头类方块"));
-        details.add(Component.literal("§7- 包括石头、圆石、石砖、安山岩等"));
-        details.add(Component.literal("§7- 破坏时产生蠹虫粒子效果"));
-        details.add(Component.literal("§7- 获得蠹虫的快速挖掘能力"));
+        details.add(Component.translatable("black_souls_options.contracts.silverfish.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.silverfish.effect_subtitle")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.silverfish.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.silverfish.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

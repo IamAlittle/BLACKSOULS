@@ -10,6 +10,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 
 /**
@@ -19,8 +20,8 @@ import java.util.*;
  */
 public class GoatContract extends ContractEffect {
     private static final String EFFECT_ID = "goat_floor_charge";
-    private static final String DISPLAY_NAME = "山羊冲撞";
-    private static final String DESCRIPTION = "视角朝地板时向前移动对正前方目标造成伤害并击飞击退";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.goat.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.goat.description";
     
     // 存储玩家最后位置用于检测移动
     private static final Map<UUID, Vec3> playerLastPositions = new HashMap<>();
@@ -247,10 +248,14 @@ public class GoatContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6山羊契约效果："));
-        details.add(Component.literal("§7- 视角朝地板时向前移动触发"));
-        details.add(Component.literal("§7- 对正前方目标造成" + CHARGE_DAMAGE + "点伤害"));
-        details.add(Component.literal("§7- 造成伤害后击飞击退"));
+        details.add(Component.translatable("black_souls_options.contracts.goat.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.goat.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.goat.effect2", CHARGE_DAMAGE)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.goat.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

@@ -52,7 +52,7 @@ public class MixinItem {
         // 检查玩家是否正在装死
         if (AxolotlContract.isPlayerFeigningDeath(player)) {
             // 发送提示消息给玩家
-            player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c装死时无法使用物品！"), true);
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatable("black_souls_options.messages.feigning_death_cannot_use_item"), true);
             // 取消物品使用
             cir.setReturnValue(InteractionResultHolder.fail(player.getItemInHand(hand)));
         }
@@ -70,7 +70,7 @@ public class MixinItem {
         // 检查玩家是否存在且正在装死
         if (player != null && AxolotlContract.isPlayerFeigningDeath(player)) {
             // 发送提示消息给玩家
-            player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c装死时无法在方块上使用物品！"), true);
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatable("black_souls_options.messages.feigning_death_cannot_use_item_on_block"), true);
             // 取消在方块上使用物品
             cir.setReturnValue(InteractionResult.FAIL);
         }

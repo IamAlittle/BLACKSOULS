@@ -6,6 +6,7 @@ import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Endermite;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 
 /**
@@ -16,8 +17,8 @@ import java.util.*;
  */
 public class EndermiteContract extends ContractEffect {
     private static final String EFFECT_ID = "endermite_anger_enderman";
-    private static final String DISPLAY_NAME = "末影螨";
-    private static final String DESCRIPTION = "让末影人主动攻击玩家";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.endermite.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.endermite.description";
     
     // 激怒效果范围（格）
     private static final int ANGER_RANGE = 16;
@@ -115,11 +116,11 @@ public class EndermiteContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6末影螨契约效果："));
-        details.add(Component.literal("§7激怒末影人"));
-        details.add(Component.literal("§7- 让" + ANGER_RANGE + "格范围内的末影人主动攻击玩家"));
-        details.add(Component.literal("§7- 效果持续激活，无需手动触发"));
-        details.add(Component.literal("§c- 注意：此效果会让末影人变得更具攻击性"));
+        details.add(Component.translatable("black_souls_options.contracts.endermite.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.endermite.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.endermite.effect2", ANGER_RANGE).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.endermite.effect3").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.endermite.warning").withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
         return details;
     }
 }

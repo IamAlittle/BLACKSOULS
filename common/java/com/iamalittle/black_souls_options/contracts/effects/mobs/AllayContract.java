@@ -2,6 +2,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.network.chat.Component;
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
  */
 public class AllayContract extends ContractEffect {
     private static final String EFFECT_ID = "allay_life_boost";
-    private static final String DISPLAY_NAME = "悦灵祝福";
-    private static final String DESCRIPTION = "每秒恢复1点生命值，吸取两格外的掉落物";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.allay.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.allay.description";
     
     // 拾取范围增加量
     private int pickupRangeBoost = 3;
@@ -34,8 +35,6 @@ public class AllayContract extends ContractEffect {
     @Override
     protected void onActivate(Player player, boolean sendMessage) {
         if (player != null) {
-            // 激活时应用拾取范围提升效果
-            applyPickupRangeBoost(player);
             // 使用契约目标名称发送消息（仅在需要时发送）
             if (sendMessage) {
                 String entityName = effectData.getString("contractEntityName");
@@ -52,8 +51,6 @@ public class AllayContract extends ContractEffect {
     @Override
     protected void onDeactivate(Player player) {
         if (player != null) {
-            // 停用效果时移除所有效果
-            removePickupRangeBoost(player);
             // 使用契约目标名称发送消息
             String entityName = effectData.getString("contractEntityName");
             if (entityName.isEmpty()) {
@@ -69,8 +66,8 @@ public class AllayContract extends ContractEffect {
         
         // 检查是否需要恢复生命值（每秒一次）
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastHealTime >= 1000) {
-            healPlayer(player);
+        if (currentTime - lastHealTime >= 2000) {
+            player.heal(1.0F);
             lastHealTime = currentTime;
         }
         
@@ -81,24 +78,10 @@ public class AllayContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b悦灵祝福效果："));
-        details.add(Component.literal("§7每秒恢复1点生命值"));
-        details.add(Component.literal("§7拾取物品范围增加" + pickupRangeBoost + "格"));
+        details.add(Component.translatable("black_souls_options.contracts.allay.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.allay.heal_effect").withStyle(style -> style.withColor(TextColor.parseColor("#AAAAAA"))));
+        details.add(Component.translatable("black_souls_options.contracts.allay.pickup_range_boost", pickupRangeBoost).withStyle(style -> style.withColor(TextColor.parseColor("#AAAAAA"))));
         return details;
-    }
-    
-    /**
-     * 应用拾取范围提升效果
-     */
-    private void applyPickupRangeBoost(Player player) {
-        // 不需要额外的效果，掉落物吸引通过onTick实时检测
-    }
-    
-    /**
-     * 移除拾取范围提升效果
-     */
-    private void removePickupRangeBoost(Player player) {
-        // 不需要移除效果，效果通过onTick实时检测
     }
     
     /**
@@ -152,29 +135,12 @@ public class AllayContract extends ContractEffect {
                 }
             }
     }
-    
-    /**
-     * 治疗玩家
-     */
-    private void healPlayer(Player player) {
-        // 恢复1点生命值
-        player.heal(1.0F);
+
+    @Override
+    protected long getTickInterval() {
+        return 10;
     }
-    
-    /**
-     * 获取拾取范围增加量
-     */
-    public int getPickupRangeBoost() {
-        return pickupRangeBoost;
-    }
-    
-    /**
-     * 设置拾取范围增加量
-     */
-    public void setPickupRangeBoost(int boost) {
-        this.pickupRangeBoost = Math.max(1, Math.min(10, boost)); // 限制在1-10格之间
-    }
-    
+
     @Override
     public CompoundTag saveToNBT() {
         CompoundTag nbt = super.saveToNBT();

@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
@@ -24,8 +25,8 @@ import java.util.*;
  */
 public class DrownedContract extends ContractEffect {
     private static final String EFFECT_ID = "drowned_trident_slowness";
-    private static final String DISPLAY_NAME = "溺尸";
-    private static final String DESCRIPTION = "使用三叉戟攻击时让目标获得缓慢效果,村民感染";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.drowned.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.drowned.description";
     
     // 缓慢效果持续时间（秒）
     private static final int SLOWNESS_DURATION = 5;
@@ -260,7 +261,7 @@ public class DrownedContract extends ContractEffect {
         }
         
         // 给攻击者发送转化消息
-        attacker.sendSystemMessage(Component.literal("§c你成功感染了一个村民！"));
+        attacker.sendSystemMessage(Component.translatable("black_souls_options.contracts.drowned.villager_convert_success").withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
     }
     
     /**
@@ -273,12 +274,12 @@ public class DrownedContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§7三叉戟缓慢"));
-        details.add(Component.literal("§7- 使用三叉戟攻击时让目标获得缓慢效果"));
-        details.add(Component.literal("§7- 缓慢效果持续" + SLOWNESS_DURATION + "秒"));
-        details.add(Component.literal("§7- 缓慢效果等级：" + (SLOWNESS_AMPLIFIER + 1)));
-        details.add(Component.literal("§c- 白天在太阳底下会着火，持续8秒"));
-        details.add(Component.literal("§c- 戴头盔可以避免太阳着火效果，但会消耗头盔耐久度"));
+        details.add(Component.translatable("black_souls_options.contracts.drowned.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.drowned.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.drowned.effect2", SLOWNESS_DURATION).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.drowned.effect3", (SLOWNESS_AMPLIFIER + 1)).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.drowned.disadvantage1").withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
+        details.add(Component.translatable("black_souls_options.contracts.drowned.disadvantage2").withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
         return details;
     }
 }

@@ -6,6 +6,7 @@ import com.iamalittle.black_souls_options.contracts.ContractManager;
 import com.iamalittle.black_souls_options.contracts.GlobalContractManager;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -27,8 +28,8 @@ import java.util.UUID;
  */
 public class FishContract extends ContractEffect {
     private static final String EFFECT_ID = "fish_swim_boost";
-    private static final String DISPLAY_NAME = "我是一条鱼";
-    private static final String DESCRIPTION = "水中游泳速度提升，契约鳕鱼、鲑鱼、热带鱼可叠加";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.fish.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.fish.description";
     
     // 玩家契约鱼类数量映射表
     private static final Map<UUID, Integer> fishContractCountMap = new HashMap<>();
@@ -166,8 +167,12 @@ public class FishContract extends ContractEffect {
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
         
-        details.add(Component.literal("§7水中游泳速度提升"));
-        details.add(Component.literal("§7鱼类契约效果可叠加3层"));
+        details.add(Component.translatable("black_souls_options.contracts.fish.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.fish.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.fish.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

@@ -5,6 +5,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import java.util.*;
 
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
+
 /**
  * 客户端专用契约管理器，用于管理玩家在客户端显示的契约数据
  * 防止单人游戏和服务器契约数据混乱
@@ -15,6 +17,7 @@ public class ClientContractManager {
     
     private ClientContractManager() {
         this.clientPlayerContractManagers = new HashMap<>();
+        BlackSoulsConfig.debug("客户端契约管理器已初始化");
     }
     
     /**
@@ -46,7 +49,7 @@ public class ClientContractManager {
         ContractManager clientManager = new ContractManager(player);
         clientPlayerContractManagers.put(playerUuid, clientManager);
         
-        System.out.println("[BLACKSOULS] Client-only ContractManager created for player: " + player.getScoreboardName());
+        BlackSoulsConfig.debug("Client-only ContractManager created for player: " + player.getScoreboardName());
         return clientManager;
     }
     
@@ -64,7 +67,7 @@ public class ClientContractManager {
         // 避免玩家重生时收到"契约效果停用"消息
         if (clientManager != null) {
             clientManager.clearContracts();
-            System.out.println("[BLACKSOULS] Client contracts cleared without deactivation messages");
+            BlackSoulsConfig.debug("Client contracts cleared without deactivation messages");
         }
         
         // 添加服务器同步的契约数据
@@ -72,7 +75,7 @@ public class ClientContractManager {
             clientManager.addContractFromNetwork(contract);
         }
         
-        System.out.println("[BLACKSOULS] Contract data synced from server to client for player: " + player.getScoreboardName());
+        BlackSoulsConfig.debug("Contract data synced from server to client for player: " + player.getScoreboardName());
     }
     
     /**
@@ -87,6 +90,7 @@ public class ClientContractManager {
             }
             clientPlayerContractManagers.remove(playerUuid);
         }
+        BlackSoulsConfig.debug("清理客户端契约数据");
     }
     
     /**
@@ -122,5 +126,6 @@ public class ClientContractManager {
             // 客户端只更新效果，不保存数据
             manager.tick();
         }
+        BlackSoulsConfig.debug("客户端契约管理器已关闭");
     }
 }

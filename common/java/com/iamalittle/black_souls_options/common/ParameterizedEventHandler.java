@@ -17,7 +17,8 @@ public class ParameterizedEventHandler<T> {
     }
     
     public void trigger(T event) {
-        for (Consumer<T> listener : listeners) {
+        // 创建副本以避免ConcurrentModificationException
+        for (Consumer<T> listener : new ArrayList<>(listeners)) {
             listener.accept(event);
         }
     }

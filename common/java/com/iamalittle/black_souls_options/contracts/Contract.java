@@ -24,6 +24,7 @@ public class Contract {
     private boolean isTracking;          // 是否正在追踪该契约目标
     private long lastCrossDimensionCheckTime; // 最后跨维度检测时间
     private final List<ContractEffect> effects; // 契约效果列表
+    private boolean isCommandCreated = false; // 是否为指令创建的契约
     
     public Contract(UUID entityId, String entityType, String entityName, Vec3 position, String dimension) {
         this.entityId = entityId;
@@ -37,6 +38,21 @@ public class Contract {
         this.isTracking = false;        // 默认不追踪
         this.lastCrossDimensionCheckTime = 0; // 默认未检测过跨维度
         this.effects = new ArrayList<>();
+        this.isCommandCreated = false; // 默认不是指令创建的
+    }
+    
+    /**
+     * 设置是否为指令创建的契约
+     */
+    public void setCommandCreated(boolean isCommandCreated) {
+        this.isCommandCreated = isCommandCreated;
+    }
+    
+    /**
+     * 检查是否为指令创建的契约
+     */
+    public boolean isCommandCreated() {
+        return isCommandCreated;
     }
     
     public UUID getEntityId() {
@@ -196,6 +212,16 @@ public class Contract {
     }
     
     /**
+     * 静默停用所有契约效果（不发送停用消息）
+     */
+    public void deactivateEffectsSilently(Player player) {
+        for (ContractEffect effect : effects) {
+            // 直接设置效果为未激活状态，不调用deactivate方法
+            effect.setActive(false);
+        }
+    }
+    
+    /**
      * 重新激活之前已激活的契约效果（不激活未激活的契约）
      * 关键修复：只重新激活之前已激活的契约效果，避免玩家手动关闭后又被重新激活的问题
      */
@@ -250,6 +276,7 @@ public class Contract {
         tag.putBoolean("canUpdatePosition", canUpdatePosition);
         tag.putBoolean("isTracking", isTracking);
         tag.putLong("lastCrossDimensionCheckTime", lastCrossDimensionCheckTime);
+        tag.putBoolean("isCommandCreated", isCommandCreated); // 保存指令创建标识
         
         // 保存契约效果
         ListTag effectsList = new ListTag();
@@ -292,6 +319,9 @@ public class Contract {
         }
         if (tag.contains("lastCrossDimensionCheckTime")) {
             contract.lastCrossDimensionCheckTime = tag.getLong("lastCrossDimensionCheckTime");
+        }
+        if (tag.contains("isCommandCreated")) {
+            contract.isCommandCreated = tag.getBoolean("isCommandCreated");
         }
         
         // 加载契约效果

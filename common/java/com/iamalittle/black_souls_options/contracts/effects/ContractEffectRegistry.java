@@ -1,6 +1,7 @@
 package com.iamalittle.black_souls_options.contracts.effects;
 
 import com.iamalittle.black_souls_options.contracts.effects.mobs.*;
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 
 import java.util.*;
 
@@ -70,7 +71,7 @@ public class ContractEffectRegistry {
                     return effect.getClass().getDeclaredConstructor(String.class, String.class, String.class)
                         .newInstance(effect.getEffectId(), effect.getDisplayName(), effect.getDescription());
                 } catch (Exception ex) {
-                    System.err.println("Failed to create effect instance for: " + effectId);
+                    BlackSoulsConfig.error("Failed to create effect instance for: " + effectId);
                     ex.printStackTrace();
                 }
             }

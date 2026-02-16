@@ -12,6 +12,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
@@ -22,8 +23,8 @@ import java.util.*;
  */
 public class FrogContract extends ContractEffect {
     private static final String EFFECT_ID = "frog_magma_cube_drops";
-    private static final String DISPLAY_NAME = "呱";
-    private static final String DESCRIPTION = "击杀小岩浆怪会随机掉落蛙鸣灯";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.frog.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.frog.description";
     
     // 青蛙契约玩家集合
     private static final Set<UUID> frogContractPlayers = new HashSet<>();
@@ -155,8 +156,10 @@ public class FrogContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6青蛙契约效果："));
-        details.add(Component.literal("§7- 击杀小岩浆怪必定掉落随机蛙鸣灯"));
+        details.add(Component.translatable("black_souls_options.contracts.frog.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.frog.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

@@ -7,6 +7,7 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 
 /**
@@ -17,8 +18,8 @@ import java.util.*;
  */
 public class MagmaCubeContract extends ContractEffect {
     private static final String EFFECT_ID = "magma_cube_fire_immunity";
-    private static final String DISPLAY_NAME = "岩浆怪";
-    private static final String DESCRIPTION = "免疫火焰伤害";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.magma_cube.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.magma_cube.description";
 
     // 岩浆怪契约玩家集合
     private static final Set<UUID> magmaCubeContractPlayers = new HashSet<>();
@@ -61,25 +62,6 @@ public class MagmaCubeContract extends ContractEffect {
     protected void onTick(Player player) {
         // 岩浆怪契约不需要每tick更新，伤害免疫在受伤事件中处理
     }
-
-    /**
-     * 检查玩家是否应该免疫火焰伤害
-     * 这个方法需要在伤害事件处理器中调用
-     */
-    public static boolean shouldImmuneFireDamage(Player player, DamageSource damageSource) {
-        if (player == null || damageSource == null) {
-            return false;
-        }
-
-        // 检查玩家是否拥有岩浆怪契约效果
-        if (!hasMagmaCubeContract(player)) {
-            return false;
-        }
-
-        // 检查伤害来源是否为火焰伤害
-        return isFireDamage(damageSource);
-    }
-
     /**
      * 处理玩家受到伤害事件，检查是否需要免疫火焰伤害
      * 这个方法需要在伤害事件处理器中调用
@@ -131,10 +113,14 @@ public class MagmaCubeContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§c岩浆怪契约效果："));
-        details.add(Component.literal("§7- 完全免疫所有火焰伤害"));
-        details.add(Component.literal("§7- 免疫火、熔岩、火焰弹等火焰伤害"));
-        details.add(Component.literal("§7- 模仿岩浆怪在熔岩中生存的特性"));
+        details.add(Component.translatable("black_souls_options.contracts.magma_cube.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.magma_cube.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.magma_cube.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.magma_cube.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

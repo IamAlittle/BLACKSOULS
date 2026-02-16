@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import java.util.*;
@@ -21,8 +22,8 @@ import java.util.*;
  */
 public class RavagerContract extends ContractEffect {
     private static final String EFFECT_ID = "ravager_destroy_plants";
-    private static final String DISPLAY_NAME = "破坏者";
-    private static final String DESCRIPTION = "破坏沿途的树叶和农作物";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.ravager.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.ravager.description";
     
     // 破坏范围（以玩家为中心的正方体边长）
     private static final int DESTROY_RANGE = 3; // 3格范围（玩家为中心，左右各1格）
@@ -189,8 +190,10 @@ public class RavagerContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6劫掠兽契约效果："));
-        details.add(Component.literal("§7- 破坏玩家周围" + DESTROY_RANGE + "格范围内的树叶和农作物"));
+        details.add(Component.translatable("black_souls_options.contracts.ravager.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.ravager.effect1", DESTROY_RANGE)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

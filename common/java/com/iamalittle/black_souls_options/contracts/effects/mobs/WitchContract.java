@@ -1,7 +1,9 @@
 package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.player.Player;
@@ -14,8 +16,8 @@ import java.util.*;
  */
 public class WitchContract extends ContractEffect {
     private static final String EFFECT_ID = "witch_magic_resistance";
-    private static final String DISPLAY_NAME = "魔法抗性";
-    private static final String DESCRIPTION = "获得女巫的魔法抗性，减少受到的魔法伤害";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.witch.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.witch.description";
     
     // 魔法伤害减免比例
     private static final float MAGIC_DAMAGE_REDUCTION = 0.50f; // 50%魔法伤害减免
@@ -105,7 +107,7 @@ public class WitchContract extends ContractEffect {
         if (isMagicDamage(damageSource)) {
             // 计算减免后的伤害值
             float reducedAmount = originalAmount * (1.0f - MAGIC_DAMAGE_REDUCTION);
-            System.out.println("[Witch Contract] Magic damage reduced from " + originalAmount + " to " + reducedAmount);
+            BlackSoulsConfig.debug("[Witch Contract] Magic damage reduced from " + originalAmount + " to " + reducedAmount);
             return reducedAmount;
         }
         
@@ -121,15 +123,10 @@ public class WitchContract extends ContractEffect {
         }
         
         // 检查是否为魔法伤害（药水、魔法攻击等）
-        // 在Minecraft 1.20.1中，魔法伤害的标识方式
         return damageSource.is(DamageTypes.MAGIC) ||
                damageSource.is(DamageTypes.INDIRECT_MAGIC) ||
                damageSource.is(DamageTypes.WITHER) ||
-               damageSource.is(DamageTypes.DRAGON_BREATH) ||
-               damageSource.getMsgId().contains("magic") ||
-               damageSource.getMsgId().contains("potion") ||
-               damageSource.getMsgId().contains("wither") ||
-               damageSource.getMsgId().contains("thorns");
+               damageSource.is(DamageTypes.DRAGON_BREATH);
     }
     
     /**
@@ -142,11 +139,16 @@ public class WitchContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6女巫契约效果："));
-        details.add(Component.literal("§7- 魔法抗性"));
-        details.add(Component.literal("§7- 减少50%受到的魔法伤害"));
-        details.add(Component.literal("§7- 对药水、魔法攻击、凋零效果等有效"));
-        details.add(Component.literal("§7- 持续生效，无需手动激活"));
+        details.add(Component.translatable("black_souls_options.contracts.witch.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.witch.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.witch.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.witch.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.witch.effect4")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

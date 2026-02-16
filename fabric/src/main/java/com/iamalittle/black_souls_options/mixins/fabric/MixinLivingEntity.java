@@ -41,7 +41,7 @@ public class MixinLivingEntity {
             if (AxolotlContract.isPlayerFeigningDeath(player)) {
                 // 取消开始使用物品的动作
                 ci.cancel();
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c装死时无法使用物品！"), true);
+                player.displayClientMessage(net.minecraft.network.chat.Component.translatable("black_souls_options.messages.feigning_death_cannot_use_item"), true);
             }
         }
     }

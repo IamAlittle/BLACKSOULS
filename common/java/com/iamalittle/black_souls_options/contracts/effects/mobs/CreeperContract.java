@@ -22,8 +22,8 @@ import java.util.List;
  */
 public class CreeperContract extends ContractEffect {
     private static final String EFFECT_ID = "creeper_death_explosion";
-    private static final String DISPLAY_NAME = "亡语自爆";
-    private static final String DESCRIPTION = "死亡时产生自爆";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.creeper.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.creeper.description";
     
     // 自爆威力（默认与苦力怕相同）
     private float explosionPower = 3.0f;
@@ -96,27 +96,13 @@ public class CreeperContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b苦力怕自爆效果："));
-        details.add(Component.literal("§a玩家死亡时产生自爆效果"));
-        details.add(Component.literal("§a自爆威力：§a" + explosionPower));
-        details.add(Component.literal("§c不会破坏方块,不会着火"));
+        details.add(Component.translatable("black_souls_options.contracts.creeper.effect_title").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.creeper.death_effect").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.creeper.explosion_power", explosionPower).withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.creeper.safety_info").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#FF5555"))));
         return details;
     }
-    
-    /**
-     * 获取自爆威力
-     */
-    public float getExplosionPower() {
-        return explosionPower;
-    }
-    
-    /**
-     * 设置自爆威力
-     */
-    public void setExplosionPower(float power) {
-        this.explosionPower = Math.max(1.0f, Math.min(10.0f, power)); // 限制在1-10之间
-    }
-    
+
     @Override
     public CompoundTag saveToNBT() {
         CompoundTag nbt = super.saveToNBT();

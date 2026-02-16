@@ -26,6 +26,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 
 /**
  * Forge版本的契约事件处理器
@@ -36,13 +37,17 @@ public class ContractEventsForge {
     @SubscribeEvent
     public static void onServerStarting(ServerStartingEvent event) {
         GlobalContractManager.getInstance().setServer(event.getServer());
-        System.out.println("[BLACKSOULS] Contract system initialized for server");
+        
+        // 注册契约管理指令
+        registerContractCommands(event.getServer());
+        
+        BlackSoulsConfig.debug("Contract system initialized for server");
     }
     
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         GlobalContractManager.getInstance().onServerStopping();
-        System.out.println("[BLACKSOULS] Contract system saved all data on server shutdown");
+        BlackSoulsConfig.debug("Contract system saved all data on server shutdown");
     }
     
     @SubscribeEvent
@@ -56,7 +61,7 @@ public class ContractEventsForge {
             ContractSyncManager.onPlayerJoin(player);
         }
         
-        System.out.println("[BLACKSOULS] Contract manager created for player: " + event.getEntity().getScoreboardName());
+        BlackSoulsConfig.debug("Contract manager created for player: " + event.getEntity().getScoreboardName());
     }
     
     @SubscribeEvent
@@ -65,7 +70,7 @@ public class ContractEventsForge {
         cleanupGlowSquidLightBlocks(event.getEntity());
         
         GlobalContractManager.getInstance().removeServerContractManager(event.getEntity().getUUID());
-        System.out.println("[BLACKSOULS] Contract manager removed for player: " + event.getEntity().getScoreboardName());
+        BlackSoulsConfig.debug("Contract manager removed for player: " + event.getEntity().getScoreboardName());
     }
     
     @SubscribeEvent
@@ -86,7 +91,7 @@ public class ContractEventsForge {
                 ServerPlayer player = (ServerPlayer) event.getEntity();
                 ContractSyncManager.syncContractEffects(player);
                 
-                System.out.println("[BLACKSOULS] Player respawn detected: " + player.getScoreboardName());
+                BlackSoulsConfig.debug("Player respawn detected: " + player.getScoreboardName());
             }
         }
     }
@@ -96,7 +101,7 @@ public class ContractEventsForge {
         // 玩家重生事件，这里不需要额外同步，因为onPlayerClone已经处理了
         if (event.getEntity() instanceof ServerPlayer) {
             ServerPlayer player = (ServerPlayer) event.getEntity();
-            System.out.println("[BLACKSOULS] Player respawn event: " + player.getScoreboardName());
+            BlackSoulsConfig.debug("Player respawn event: " + player.getScoreboardName());
         }
     }
     
@@ -120,7 +125,7 @@ public class ContractEventsForge {
             
             // 移除停用所有契约效果的逻辑，让契约在玩家死亡后保持状态
             // 不再调用 contract.deactivateEffects(player)
-            System.out.println("[BLACKSOULS] Contract effects maintained on player death: " + player.getScoreboardName());
+            BlackSoulsConfig.debug("Contract effects maintained on player death: " + player.getScoreboardName());
         }
         }
     }
@@ -184,7 +189,22 @@ public class ContractEventsForge {
         
         // 调用发光鱿鱼契约的清理方法
         GlowSquidContract.cleanupPlayerLightBlocks(player);
-        System.out.println("[BLACKSOULS] Cleaned up glow squid light blocks for player: " + player.getScoreboardName());
+        BlackSoulsConfig.debug("Cleaned up glow squid light blocks for player: " + player.getScoreboardName());
+    }
+    
+    /**
+     * 注册契约管理指令
+     */
+    private static void registerContractCommands(MinecraftServer server) {
+        try {
+            // 使用反射调用BSContractCommand的注册方法
+            Class<?> commandClass = Class.forName("com.iamalittle.black_souls_options.commands.BSContractCommand");
+            java.lang.reflect.Method registerMethod = commandClass.getMethod("register", MinecraftServer.class);
+            registerMethod.invoke(null, server);
+            BlackSoulsConfig.debug("Contract commands registered successfully");
+        } catch (Exception e) {
+            BlackSoulsConfig.error("Failed to register contract commands: " + e.getMessage());
+        }
     }
     
     /**

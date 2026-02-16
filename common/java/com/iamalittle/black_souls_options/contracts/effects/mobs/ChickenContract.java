@@ -6,6 +6,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 
 /**
@@ -17,8 +18,8 @@ import java.util.*;
  */
 public class ChickenContract extends ContractEffect {
     private static final String EFFECT_ID = "chicken_slow_falling";
-    private static final String DISPLAY_NAME = "鸡";
-    private static final String DESCRIPTION = "高处下落时获得缓降效果";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.chicken.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.chicken.description";
     
     // 基础触发高度（格）
     private static final int BASE_TRIGGER_HEIGHT = 3;
@@ -172,10 +173,10 @@ public class ChickenContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6鸡契约效果："));
-        details.add(Component.literal("§7缓降"));
-        details.add(Component.literal("§7- 距离地面超过" + BASE_TRIGGER_HEIGHT + "格时获得缓降效果"));
-        details.add(Component.literal("§7- 落地后缓降效果消失"));
+        details.add(Component.translatable("black_souls_options.contracts.chicken.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.chicken.slow_falling").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.chicken.trigger_height", BASE_TRIGGER_HEIGHT).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.chicken.effect_disappear").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

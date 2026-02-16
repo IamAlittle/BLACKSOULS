@@ -4,6 +4,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import com.iamalittle.black_souls_options.network.ContractNetworkHandler;
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import java.util.*;
 import java.io.File;
 
@@ -51,16 +52,15 @@ public class GlobalContractManager {
         if (serverPlayerContractManagers.containsKey(playerUuid)) {
             return serverPlayerContractManagers.get(playerUuid);
         }
-        
         // 关键修复：检查是否在服务器端执行
         if (player.level() == null || player.level().isClientSide()) {
             // 客户端：返回null，客户端应使用ClientContractManager
-            System.out.println("[BLACKSOULS] Warning: Attempted to get server ContractManager on client side");
+            BlackSoulsConfig.warn("Warning: Attempted to get server ContractManager on client side");
             return null;
         }
         
         // 关键修复：检查玩家状态，避免为无效玩家创建管理器
-        if (player.level().getServer() == null) {
+        if (player.getServer() == null) {
             // 玩家无效，返回null或已存在的管理器（如果存在）
             if (serverPlayerContractManagers.containsKey(playerUuid)) {
                 return serverPlayerContractManagers.get(playerUuid);
@@ -82,7 +82,7 @@ public class GlobalContractManager {
             ContractNetworkHandler.sendContractDataToPlayer((ServerPlayer) player, true);
         }
         
-        System.out.println("[BLACKSOULS] Server ContractManager created for player: " + player.getScoreboardName());
+        BlackSoulsConfig.debug("Server ContractManager created for player: " + player.getScoreboardName());
         return contractManager;
     }
     

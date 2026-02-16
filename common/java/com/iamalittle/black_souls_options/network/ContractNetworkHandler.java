@@ -7,6 +7,7 @@ import com.iamalittle.black_souls_options.contracts.GlobalContractManager;
 import com.iamalittle.black_souls_options.contracts.effects.mobs.LlamaContract;
 import com.iamalittle.black_souls_options.contracts.effects.mobs.ParrotContract;
 import com.iamalittle.black_souls_options.contracts.effects.mobs.SnowGolemContract;
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -65,7 +66,7 @@ public class ContractNetworkHandler {
         
         ContractManager manager = ContractManagerHelper.getAppropriateContractManager(minecraft.player);
         if (manager == null) {
-            System.out.println("[BLACKSOULS] Contract manager not found for client player");
+            BlackSoulsConfig.debug("Contract manager not found for client player");
             return;
         }
         
@@ -92,7 +93,7 @@ public class ContractNetworkHandler {
             // 删除服务器端已不存在的契约
             for (UUID entityId : contractsToRemove) {
                 manager.removeContract(entityId);
-                System.out.println("[BLACKSOULS] Contract removed on client: " + entityId);
+                BlackSoulsConfig.debug("Contract removed on client: " + entityId);
             }
         }
         
@@ -108,7 +109,7 @@ public class ContractNetworkHandler {
             }
         }
         
-        System.out.println("[BLACKSOULS] Contract data synchronized for client player: " + packet.getContracts().size() + " contracts");
+        BlackSoulsConfig.debug("Contract data synchronized for client player: " + packet.getContracts().size() + " contracts");
     }
     
     /**
@@ -150,13 +151,13 @@ public class ContractNetworkHandler {
         
         // 验证玩家身份
         if (!player.getUUID().equals(packet.getPlayerId())) {
-            System.err.println("[BLACKSOULS] Warning: Contract delete request from wrong player");
+            BlackSoulsConfig.warn("Contract delete request from wrong player");
             return;
         }
         
         ContractManager manager = GlobalContractManager.getInstance().getServerContractManager(player);
         if (manager == null) {
-            System.out.println("[BLACKSOULS] Contract manager not found for server player: " + player.getName().getString());
+            BlackSoulsConfig.debug("Contract manager not found for server player: " + player.getName().getString());
             return;
         }
         
@@ -166,7 +167,7 @@ public class ContractNetworkHandler {
         // 向所有玩家广播契约更新
         broadcastContractUpdate(player);
         
-        System.out.println("[BLACKSOULS] Contract deleted on server for player: " + player.getName().getString() + ", entityId: " + packet.getEntityId());
+        BlackSoulsConfig.debug("Contract deleted on server for player: " + player.getName().getString() + ", entityId: " + packet.getEntityId());
     }
     
     /**
@@ -177,7 +178,7 @@ public class ContractNetworkHandler {
         
         ContractManager manager = GlobalContractManager.getInstance().getServerContractManager(player);
         if (manager == null) {
-            System.out.println("[BLACKSOULS] Contract manager not found for server player: " + player.getName().getString());
+            BlackSoulsConfig.debug("Contract manager not found for server player: " + player.getName().getString());
             return;
         }
         
@@ -187,7 +188,7 @@ public class ContractNetworkHandler {
         // 向所有玩家广播契约更新
         broadcastContractUpdate(player);
         
-        System.out.println("[BLACKSOULS] Contract created on server for player: " + player.getName().getString() + ", entity: " + packet.getEntityName());
+        BlackSoulsConfig.debug("Contract created on server for player: " + player.getName().getString() + ", entity: " + packet.getEntityName());
     }
     
     /**
@@ -211,7 +212,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = fabricPacketClass.getMethod("sendToPlayer", ServerPlayer.class, ContractSyncPacket.class);
             method.invoke(null, player, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Fabric packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Fabric packet: " + e.getMessage());
         }
     }
     
@@ -224,7 +225,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = forgePacketClass.getMethod("sendToPlayer", ServerPlayer.class, ContractSyncPacket.class);
             method.invoke(null, player, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Forge packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Forge packet: " + e.getMessage());
         }
     }
     
@@ -237,7 +238,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = fabricPacketClass.getMethod("sendCreateRequest", ContractCreatePacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Fabric create packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Fabric create packet: " + e.getMessage());
         }
     }
     
@@ -250,7 +251,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = forgePacketClass.getMethod("sendCreateRequest", ContractCreatePacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Forge create packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Forge create packet: " + e.getMessage());
         }
     }
     
@@ -263,7 +264,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = fabricPacketClass.getMethod("sendDeleteRequest", ContractDeletePacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Fabric delete packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Fabric delete packet: " + e.getMessage());
         }
     }
     
@@ -276,7 +277,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = forgePacketClass.getMethod("sendDeleteRequest", ContractDeletePacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Forge delete packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Forge delete packet: " + e.getMessage());
         }
     }
     
@@ -287,7 +288,7 @@ public class ContractNetworkHandler {
         // 获取服务器实例
         MinecraftServer server = getServerInstance();
         if (server == null) {
-            System.err.println("[BLACKSOULS] Failed to broadcast feign death state: server instance not found");
+            BlackSoulsConfig.error("Failed to broadcast feign death state: server instance not found");
             return;
         }
         
@@ -296,7 +297,7 @@ public class ContractNetworkHandler {
             sendFeignDeathPacket(player, packet);
         }
         
-        System.out.println("[BLACKSOULS] Feign death state broadcasted to all players");
+        BlackSoulsConfig.debug("Feign death state broadcasted to all players");
     }
     
     /**
@@ -319,7 +320,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = fabricPacketClass.getMethod("sendFeignDeathPacket", ServerPlayer.class, FeignDeathSyncPacket.class);
             method.invoke(null, player, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Fabric feign death packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Fabric feign death packet: " + e.getMessage());
         }
     }
     
@@ -332,7 +333,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = forgePacketClass.getMethod("sendToPlayer", ServerPlayer.class, FeignDeathSyncPacket.class);
             method.invoke(null, player, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Forge feign death packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Forge feign death packet: " + e.getMessage());
         }
     }
     
@@ -362,7 +363,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method getCurrentServerMethod = serverLifecycleClass.getMethod("getCurrentServer");
             return (MinecraftServer) getCurrentServerMethod.invoke(null);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to get server instance: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to get server instance: " + e.getMessage());
         }
         
         return null;
@@ -401,13 +402,13 @@ public class ContractNetworkHandler {
         
         // 验证玩家身份
         if (!player.getUUID().equals(packet.getPlayerId())) {
-            System.err.println("[BLACKSOULS] Warning: Effect toggle request from wrong player");
+            BlackSoulsConfig.warn("Effect toggle request from wrong player");
             return;
         }
         
         ContractManager manager = GlobalContractManager.getInstance().getServerContractManager(player);
         if (manager == null) {
-            System.out.println("[BLACKSOULS] Contract manager not found for server player: " + player.getName().getString());
+            BlackSoulsConfig.debug("Contract manager not found for server player: " + player.getName().getString());
             return;
         }
         
@@ -423,8 +424,8 @@ public class ContractNetworkHandler {
             // 向所有玩家广播契约更新
             broadcastContractUpdate(player);
             
-            System.out.println("[BLACKSOULS] Effect toggle updated on server for player: " + player.getName().getString() + 
-                             ", entityId: " + packet.getEntityId() + ", isActive: " + packet.isActive());
+            BlackSoulsConfig.debug("Effect toggle updated on server for player: " + player.getName().getString() + 
+                         ", entityId: " + packet.getEntityId() + ", isActive: " + packet.isActive());
         }
     }
     
@@ -436,7 +437,7 @@ public class ContractNetworkHandler {
         
         // 验证玩家身份
         if (!player.getUUID().equals(packet.getPlayerId())) {
-            System.err.println("[BLACKSOULS] Warning: Spit attack request from wrong player");
+            BlackSoulsConfig.warn("Spit attack request from wrong player");
             return;
         }
         
@@ -445,12 +446,12 @@ public class ContractNetworkHandler {
             // 执行吐口水攻击
             boolean success = LlamaContract.performSpitAttack(player);
             if (success) {
-                System.out.println("[BLACKSOULS] Spit attack performed for player: " + player.getName().getString());
+                BlackSoulsConfig.debug("Spit attack performed for player: " + player.getName().getString());
             } else {
-                System.out.println("[BLACKSOULS] Spit attack failed for player: " + player.getName().getString());
+                BlackSoulsConfig.debug("Spit attack failed for player: " + player.getName().getString());
             }
         } else {
-            System.out.println("[BLACKSOULS] Player does not have llama contract: " + player.getName().getString());
+            BlackSoulsConfig.debug("Player does not have llama contract: " + player.getName().getString());
         }
     }
     
@@ -462,7 +463,7 @@ public class ContractNetworkHandler {
         
         // 验证玩家身份
         if (!player.getUUID().equals(packet.getPlayerId())) {
-            System.err.println("[BLACKSOULS] Warning: Random sound request from wrong player");
+            BlackSoulsConfig.warn("Random sound request from wrong player");
             return;
         }
         
@@ -471,12 +472,12 @@ public class ContractNetworkHandler {
             // 执行随机音效播放
             boolean success = ParrotContract.performRandomSound(player);
             if (success) {
-                System.out.println("[BLACKSOULS] Random sound played for player: " + player.getName().getString());
+                BlackSoulsConfig.debug("Random sound played for player: " + player.getName().getString());
             } else {
-                System.out.println("[BLACKSOULS] Random sound failed for player: " + player.getName().getString());
+                BlackSoulsConfig.debug("Random sound failed for player: " + player.getName().getString());
             }
         } else {
-            System.out.println("[BLACKSOULS] Player does not have parrot contract: " + player.getName().getString());
+            BlackSoulsConfig.debug("Player does not have parrot contract: " + player.getName().getString());
         }
     }
     
@@ -488,7 +489,7 @@ public class ContractNetworkHandler {
         
         // 验证玩家身份
         if (!player.getUUID().equals(packet.getPlayerId())) {
-            System.err.println("[BLACKSOULS] Warning: Snowball attack request from wrong player");
+            BlackSoulsConfig.warn("Snowball attack request from wrong player");
             return;
         }
         
@@ -497,13 +498,29 @@ public class ContractNetworkHandler {
             // 执行雪球攻击
             boolean success = SnowGolemContract.performSnowballAttack(player);
             if (success) {
-                System.out.println("[BLACKSOULS] Snowball attack performed for player: " + player.getName().getString());
+                BlackSoulsConfig.debug("Snowball attack performed for player: " + player.getName().getString());
             } else {
-                System.out.println("[BLACKSOULS] Snowball attack failed for player: " + player.getName().getString());
+                BlackSoulsConfig.debug("Snowball attack failed for player: " + player.getName().getString());
             }
         } else {
-            System.out.println("[BLACKSOULS] Player does not have snow golem contract: " + player.getName().getString());
+            BlackSoulsConfig.debug("Player does not have snow golem contract: " + player.getName().getString());
         }
+    }
+    
+    /**
+     * 服务器端：处理杀害攻击请求
+     */
+    public static void handleKillAttackRequest(ServerPlayer player, KillAttackPacket packet) {
+        if (player == null || player.server == null) return;
+        
+        // 验证玩家身份
+        if (!player.getUUID().equals(packet.getPlayerId())) {
+            BlackSoulsConfig.warn("Kill attack request from wrong player");
+            return;
+        }
+        
+        // 在服务端执行杀害攻击
+        KillAttackPacket.handle(packet, player);
     }
     
     /**
@@ -558,6 +575,23 @@ public class ContractNetworkHandler {
     }
     
     /**
+     * 客户端：发送杀害攻击请求到服务器
+     */
+    public static void sendKillAttackRequest(int targetEntityId) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) return;
+        
+        KillAttackPacket packet = new KillAttackPacket(minecraft.player.getUUID(), targetEntityId);
+        
+        // Fabric和Forge分别实现网络发送
+        if (isFabric()) {
+            sendKillAttackPacketFabric(packet);
+        } else {
+            sendKillAttackPacketForge(packet);
+        }
+    }
+    
+    /**
      * Fabric版本的吐口水攻击数据包发送
      */
     private static void sendSpitAttackPacketFabric(SpitAttackPacket packet) {
@@ -566,7 +600,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = fabricPacketClass.getMethod("sendSpitAttackRequest", SpitAttackPacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Fabric spit attack packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Fabric spit attack packet: " + e.getMessage());
         }
     }
     
@@ -579,7 +613,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = forgePacketClass.getMethod("sendSpitAttackRequest", SpitAttackPacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Forge spit attack packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Forge spit attack packet: " + e.getMessage());
         }
     }
     
@@ -592,7 +626,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = fabricPacketClass.getMethod("sendRandomSoundRequest", RandomSoundPacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Fabric random sound packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Fabric random sound packet: " + e.getMessage());
         }
     }
     
@@ -605,7 +639,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = forgePacketClass.getMethod("sendRandomSoundRequest", RandomSoundPacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Forge random sound packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Forge random sound packet: " + e.getMessage());
         }
     }
     
@@ -618,7 +652,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = fabricPacketClass.getMethod("sendSnowballAttackRequest", SnowballAttackPacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Fabric snowball attack packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Fabric snowball attack packet: " + e.getMessage());
         }
     }
     
@@ -631,7 +665,33 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = forgePacketClass.getMethod("sendSnowballAttackRequest", SnowballAttackPacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Forge snowball attack packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Forge snowball attack packet: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Fabric版本的杀害攻击数据包发送
+     */
+    private static void sendKillAttackPacketFabric(KillAttackPacket packet) {
+        try {
+            Class<?> fabricPacketClass = Class.forName("com.iamalittle.black_souls_options.fabric.network.FabricContractNetwork");
+            java.lang.reflect.Method method = fabricPacketClass.getMethod("sendKillAttackRequest", KillAttackPacket.class);
+            method.invoke(null, packet);
+        } catch (Exception e) {
+            BlackSoulsConfig.error("Failed to send Fabric kill attack packet: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Forge版本的杀害攻击数据包发送
+     */
+    private static void sendKillAttackPacketForge(KillAttackPacket packet) {
+        try {
+            Class<?> forgePacketClass = Class.forName("com.iamalittle.black_souls_options.forge.network.ForgeContractNetwork");
+            java.lang.reflect.Method method = forgePacketClass.getMethod("sendKillAttackRequest", KillAttackPacket.class);
+            method.invoke(null, packet);
+        } catch (Exception e) {
+            BlackSoulsConfig.error("Failed to send Forge kill attack packet: " + e.getMessage());
         }
     }
     
@@ -644,7 +704,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = fabricPacketClass.getMethod("sendEffectToggleRequest", EffectTogglePacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Fabric effect toggle packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Fabric effect toggle packet: " + e.getMessage());
         }
     }
     
@@ -657,7 +717,7 @@ public class ContractNetworkHandler {
             java.lang.reflect.Method method = forgePacketClass.getMethod("sendEffectToggleRequest", EffectTogglePacket.class);
             method.invoke(null, packet);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to send Forge effect toggle packet: " + e.getMessage());
+            BlackSoulsConfig.error("Failed to send Forge effect toggle packet: " + e.getMessage());
         }
     }
 }

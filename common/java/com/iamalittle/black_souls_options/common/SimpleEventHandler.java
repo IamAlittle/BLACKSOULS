@@ -17,7 +17,8 @@ public class SimpleEventHandler {
     }
     
     public void trigger() {
-        for (Consumer<Void> listener : listeners) {
+        // 创建副本以避免ConcurrentModificationException
+        for (Consumer<Void> listener : new ArrayList<>(listeners)) {
             listener.accept(null);
         }
     }

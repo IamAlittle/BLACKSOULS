@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -24,8 +25,8 @@ import java.util.UUID;
  */
 public class ShulkerContract extends ContractEffect {
     private static final String EFFECT_ID = "shulker_levitation";
-    private static final String DISPLAY_NAME = "漂浮";
-    private static final String DESCRIPTION = "攻击使目标漂浮";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.shulker.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.shulker.description";
     
     // 漂浮效果持续时间（秒）
     private static final int LEVITATION_DURATION = 5;
@@ -126,9 +127,9 @@ public class ShulkerContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6潜影贝契约效果："));
-        details.add(Component.literal("§7漂浮"));
-        details.add(Component.literal("§7- 攻击时有" + (int)(TRIGGER_CHANCE * 100) + "%概率使目标漂浮"));
+        details.add(Component.translatable("black_souls_options.contracts.shulker.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.shulker.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.shulker.effect2", (int)(TRIGGER_CHANCE * 100)).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

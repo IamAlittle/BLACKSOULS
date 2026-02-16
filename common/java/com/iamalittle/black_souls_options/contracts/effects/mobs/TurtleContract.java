@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.ContractDetector;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -26,8 +27,8 @@ import java.util.List;
  */
 public class TurtleContract extends ContractEffect {
     private static final String EFFECT_ID = "turtle_attract_hostile";
-    private static final String DISPLAY_NAME = "龟壳的诱惑";
-    private static final String DESCRIPTION = "吸引僵尸猪灵、豹猫和野生狼的仇恨";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.turtle.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.turtle.description";
     
     // 吸引仇恨的范围（格数）
     private static final double VERTICAL_RANGE = 3.0;    // 垂直距离3格
@@ -150,8 +151,8 @@ public class TurtleContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6海龟契约效果："));
-        details.add(Component.literal("§a- 吸引僵尸猪灵、豹猫和野生狼主动攻击玩家"));
+        details.add(Component.translatable("black_souls_options.contracts.turtle.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.turtle.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 

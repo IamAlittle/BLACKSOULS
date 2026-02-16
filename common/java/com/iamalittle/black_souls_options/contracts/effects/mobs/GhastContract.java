@@ -14,6 +14,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 
 /**
@@ -24,11 +25,8 @@ import java.util.*;
  */
 public class GhastContract extends ContractEffect {
     private static final String EFFECT_ID = "ghast_fireball_deflection";
-    private static final String DISPLAY_NAME = "那是气球吗？";
-    private static final String DESCRIPTION = "火球无法碰到玩家";
-    
-    // 恶魂契约玩家集合
-    private static final Set<UUID> ghastContractPlayers = new HashSet<>();
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.ghast.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.ghast.description";
     
     // 检测范围（格）
     private static final double DETECTION_RANGE = 10.0;
@@ -41,8 +39,6 @@ public class GhastContract extends ContractEffect {
     @Override
     protected void onActivate(Player player, boolean sendMessage) {
         if (player != null) {
-            ghastContractPlayers.add(player.getUUID());
-            
             // 使用契约目标名称发送消息（仅在需要时发送）
             if (sendMessage) {
                 String entityName = effectData.getString("contractEntityName");
@@ -57,7 +53,6 @@ public class GhastContract extends ContractEffect {
     @Override
     protected void onDeactivate(Player player) {
         if (player != null) {
-            ghastContractPlayers.remove(player.getUUID());
             
             // 使用契约目标名称发送消息
             String entityName = effectData.getString("contractEntityName");
@@ -118,16 +113,7 @@ public class GhastContract extends ContractEffect {
                entity instanceof DragonFireball ||
                (entity instanceof Projectile && entity.getType().toString().contains("fireball"));
     }
-    
 
-    
-    /**
-     * 检查玩家是否拥有恶魂契约效果
-     */
-    public static boolean hasGhastContract(Player player) {
-        return player != null && ghastContractPlayers.contains(player.getUUID());
-    }
-    
     @Override
     protected long getTickInterval() {
         return 5; // 每5tick检测一次（0.25秒）
@@ -136,9 +122,12 @@ public class GhastContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6恶魂契约效果："));
-        details.add(Component.literal("§7- 自动静止周围" + (int)DETECTION_RANGE + "格内的火球"));
-        details.add(Component.literal("§7- 烈焰人的火球不会命中"));
+        details.add(Component.translatable("black_souls_options.contracts.ghast.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.ghast.effect1", (int)DETECTION_RANGE)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.ghast.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

@@ -37,6 +37,7 @@
     "MixinLevelRenderer",
     "MixinPauseScreen",
     "MixinLivingEntity",
-    "PlayerRendererMixin"
+    "PlayerRendererMixin",
+    "TitleScreenMixin"
   ]
 }

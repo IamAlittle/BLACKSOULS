@@ -2,6 +2,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.player.Player;
@@ -15,8 +16,8 @@ import java.util.List;
  */
 public class CowContract extends ContractEffect {
     private static final String EFFECT_ID = "cow_clear_buffs";
-    private static final String DISPLAY_NAME = "万能药";
-    private static final String DESCRIPTION = "自动清除buff效果";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.cow.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.cow.description";
     
     // 清除间隔（毫秒）
     private long clearInterval = 1000; // 默认5秒清除一次
@@ -65,9 +66,9 @@ public class CowContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b万能药效果："));
-        details.add(Component.literal("§a好消息，会清除负面buff"));
-        details.add(Component.literal("§c坏消息，非负面buff也会清除"));;
+        details.add(Component.translatable("black_souls_options.contracts.cow.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.cow.clear_negative").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.cow.clear_all").withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
         return details;
     }
     

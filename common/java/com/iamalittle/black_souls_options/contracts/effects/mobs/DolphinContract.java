@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import com.iamalittle.black_souls_options.render.ChestHighlighter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,8 +21,8 @@ import java.util.UUID;
  */
 public class DolphinContract extends ContractEffect {
     private static final String EFFECT_ID = "dolphin_chest_vision";
-    private static final String DISPLAY_NAME = "通透了";
-    private static final String DESCRIPTION = "透视附近的容器，显示红色边框，穿墙可见";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.dolphin.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.dolphin.description";
     
     // 海豚契约玩家集合
     private static final Set<UUID> dolphinContractPlayers = new HashSet<>();
@@ -95,19 +96,13 @@ public class DolphinContract extends ContractEffect {
         return player != null && dolphinContractPlayers.contains(player.getUUID());
     }
     
-    /**
-     * 获取海豚契约玩家集合（用于渲染器）
-     */
-    public static Set<UUID> getDolphinContractPlayers() {
-        return new HashSet<>(dolphinContractPlayers);
-    }
-    
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§a透视附近的箱子"));
-        details.add(Component.literal("§a穿墙可见容器"));
-        details.add(Component.literal("§a支持箱子、木桶、潜影盒等"));
+        details.add(Component.translatable("black_souls_options.contracts.dolphin.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.dolphin.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.dolphin.effect2").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.dolphin.effect3").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

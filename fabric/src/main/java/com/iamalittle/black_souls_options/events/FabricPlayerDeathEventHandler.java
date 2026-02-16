@@ -34,7 +34,7 @@ public class FabricPlayerDeathEventHandler {
                 EvokerContract.triggerTotemEffect(player);
                 
                 // 发送消息给玩家
-                player.sendSystemMessage(Component.literal("§6你被唤魔者的不死图腾效果拯救了！"));
+                player.sendSystemMessage(Component.translatable("black_souls_options.messages.totem_of_undying_saved"));
                 
                 // 返回false取消死亡
                 return false;

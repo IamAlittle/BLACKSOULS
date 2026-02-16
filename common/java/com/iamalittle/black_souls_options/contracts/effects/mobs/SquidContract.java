@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -23,8 +24,8 @@ import java.util.UUID;
  */
 public class SquidContract extends ContractEffect {
     private static final String EFFECT_ID = "squid_blindness_defense";
-    private static final String DISPLAY_NAME = "墨汁防御";
-    private static final String DESCRIPTION = "被攻击时给攻击者失明效果";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.squid.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.squid.description";
     
     // 失明持续时间（秒）
     private static final int BLINDNESS_DURATION = 5;
@@ -122,11 +123,11 @@ public class SquidContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6鱿鱼契约效果："));
-        details.add(Component.literal("§2墨汁防御"));
-        details.add(Component.literal("§2- 被攻击时给攻击者失明效果"));
-        details.add(Component.literal("§2- 失明持续" + BLINDNESS_DURATION + "秒"));
-        details.add(Component.literal("§2- 模仿鱿鱼的墨汁防御机制"));
+        details.add(Component.translatable("black_souls_options.contracts.squid.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.squid.effect_subtitle").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.squid.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.squid.effect2", BLINDNESS_DURATION).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.squid.effect3").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

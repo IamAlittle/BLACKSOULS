@@ -15,8 +15,8 @@ import java.util.*;
  */
 public class BatContract extends ContractEffect {
     private static final String EFFECT_ID = "bat_night_vision";
-    private static final String DISPLAY_NAME = "蝙蝠夜视";
-    private static final String DESCRIPTION = "获得永久夜视效果";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.bat.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.bat.description";
     
     // 夜视效果管理
     private MobEffectInstance batNightVisionEffect = null; // 蝙蝠契约给予的夜视效果实例
@@ -122,9 +122,9 @@ public class BatContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b蝙蝠契约效果："));
-        details.add(Component.literal("§7基础契约效果"));
-        details.add(Component.literal("§7- 获得永久夜视效果"));
+        details.add(Component.translatable("black_souls_options.contracts.bat.effect_title").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.bat.night_vision_effect").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.bat.permanent_effect").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FF55"))));
         return details;
     }
     

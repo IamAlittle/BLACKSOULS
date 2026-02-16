@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
@@ -19,8 +20,8 @@ import java.util.UUID;
  */
 public class FoxContract extends ContractEffect {
     private static final String EFFECT_ID = "fox_berry_immunity";
-    private static final String DISPLAY_NAME = "狐狸";
-    private static final String DESCRIPTION = "浆果丛中不会减速和受伤";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.fox.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.fox.description";
     
     // 狐狸契约玩家集合
     private static final Set<UUID> foxContractPlayers = new HashSet<>();
@@ -67,9 +68,12 @@ public class FoxContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6狐狸契约效果："));
-        details.add(Component.literal("§7- 在浆果丛中不会减速"));
-        details.add(Component.literal("§7- 在浆果丛中不会受到伤害"));
+        details.add(Component.translatable("black_souls_options.contracts.fox.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.fox.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.fox.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

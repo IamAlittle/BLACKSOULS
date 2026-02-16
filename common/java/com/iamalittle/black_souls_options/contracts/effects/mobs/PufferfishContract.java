@@ -8,6 +8,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 
 /**
@@ -18,8 +19,8 @@ import java.util.*;
  */
 public class PufferfishContract extends ContractEffect {
     private static final String EFFECT_ID = "pufferfish_poison_aura";
-    private static final String DISPLAY_NAME = "河豚";
-    private static final String DESCRIPTION = "靠近玩家1格内的生物目标会受到3秒的中毒";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.pufferfish.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.pufferfish.description";
     
     // 中毒持续时间（秒）
     private static final int POISON_DURATION = 3;
@@ -132,22 +133,21 @@ public class PufferfishContract extends ContractEffect {
         }
     }
 
-    /**
-     * 检查玩家是否拥有河豚契约效果
-     */
-    public static boolean hasPufferfishContract(Player player) {
-        return player != null && pufferfishContractPlayers.contains(player.getUUID());
-    }
-
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6河豚契约效果："));
-        details.add(Component.literal("§2毒素领域"));
-        details.add(Component.literal("§7- 靠近玩家1格内的生物目标会受到中毒效果"));
-        details.add(Component.literal("§7- 中毒持续" + POISON_DURATION + "秒"));
-        details.add(Component.literal("§7- 模仿河豚的防御机制：靠近时会释放毒素"));
-        details.add(Component.literal("§7- 每1秒检查一次周围生物"));
+        details.add(Component.translatable("black_souls_options.contracts.pufferfish.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.pufferfish.effect_subtitle")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#00FF00"))));
+        details.add(Component.translatable("black_souls_options.contracts.pufferfish.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.pufferfish.effect2", POISON_DURATION)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.pufferfish.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.pufferfish.effect4")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

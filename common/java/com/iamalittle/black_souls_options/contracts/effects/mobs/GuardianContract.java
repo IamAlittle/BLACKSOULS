@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 import java.util.Collection;
 
@@ -21,8 +22,8 @@ import java.util.Collection;
  */
 public class GuardianContract extends ContractEffect {
     private static final String EFFECT_ID = "guardian_fluid_clear";
-    private static final String DISPLAY_NAME = "我是个海绵";
-    private static final String DESCRIPTION = "让周围一格的任何流体消失";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.guardian.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.guardian.description";
     
     // 流体方块消失范围（以玩家为中心的正方体边长）
     private static final int FLUID_CLEAR_RANGE = 3; // 3格范围（玩家为中心，左右各1格）
@@ -168,13 +169,7 @@ public class GuardianContract extends ContractEffect {
             }
         }
     }
-    
-    /**
-     * 检查玩家是否拥有古守卫者契约效果
-     */
-    public static boolean hasGuardianContract(Player player) {
-        return player != null && guardianContractPlayers.contains(player.getUUID());
-    }
+
     @Override
     protected long getTickInterval() {
         return 500;
@@ -183,9 +178,12 @@ public class GuardianContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6古守卫者契约效果："));
-        details.add(Component.literal("§7- 让玩家周围" + FLUID_CLEAR_RANGE + "格范围内的任何流体方块消失"));
-        details.add(Component.literal("§c- 持续获得挖掘疲劳效果"));
+        details.add(Component.translatable("black_souls_options.contracts.guardian.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.guardian.effect1", FLUID_CLEAR_RANGE)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.guardian.negative_effect")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
         return details;
     }
 }

@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.network.chat.TextColor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,8 +25,8 @@ import java.util.UUID;
  */
 public class PandaContract extends ContractEffect {
     private static final String EFFECT_ID = "panda_bamboo_eat";
-    private static final String DISPLAY_NAME = "熊猫";
-    private static final String DESCRIPTION = "可以快速食用竹子恢复饥饿值";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.panda.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.panda.description";
     
     // 恢复饥饿值（比骆驼契约更快）
     private static final int FOOD_AMOUNT = 1;
@@ -100,11 +101,14 @@ public class PandaContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6熊猫契约效果："));
-        details.add(Component.literal("§7竹子快速食用"));
-        details.add(Component.literal("§7- 竹子右键触发快速食用"));
-        details.add(Component.literal("§7- 恢复1点饱食度"));
-
+        details.add(Component.translatable("black_souls_options.contracts.panda.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.panda.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.panda.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.panda.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

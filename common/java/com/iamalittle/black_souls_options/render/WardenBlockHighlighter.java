@@ -12,6 +12,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Blocks;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.util.Mth;
@@ -149,9 +150,14 @@ public class WardenBlockHighlighter {
             return false;
         }
         
-        // 跳过可替换方块（如草、花、蕨等）
+        // 跳过可替换方块（如草、花、蕨等），但覆地苔藓和雪除外
         if (blockState.canBeReplaced()) {
-            return false;
+            // 检查是否为覆地苔藓或雪
+            if (blockState.is(Blocks.MOSS_CARPET) || blockState.is(Blocks.SNOW)) {
+                // 覆地苔藓和雪不算在可替换方块里，继续处理
+            } else {
+                return false;
+            }
         }
         
         // 检查方块是否在玩家视线范围内

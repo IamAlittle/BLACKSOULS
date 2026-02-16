@@ -42,7 +42,8 @@ public class ContractSyncPacket {
                 new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()),
                 buf.readUtf(),
                 buf.readLong(),
-                buf.readBoolean()
+                buf.readBoolean(),
+                buf.readBoolean() // 读取指令创建标识
             );
             
             // 读取效果信息
@@ -72,6 +73,7 @@ public class ContractSyncPacket {
             buf.writeUtf(contract.dimension);
             buf.writeLong(contract.creationTime);
             buf.writeBoolean(contract.isTracking);
+            buf.writeBoolean(contract.isCommandCreated); // 写入指令创建标识
             
             // 写入效果信息
             buf.writeInt(contract.getEffectCount());
@@ -105,10 +107,11 @@ public class ContractSyncPacket {
         public final String dimension;
         public final long creationTime;
         public final boolean isTracking;
+        public final boolean isCommandCreated; // 指令创建标识
         private final List<EffectInfo> effects;
         
         public ContractData(UUID entityId, String entityType, String entityName, 
-                           Vec3 position, String dimension, long creationTime, boolean isTracking) {
+                           Vec3 position, String dimension, long creationTime, boolean isTracking, boolean isCommandCreated) {
             this.entityId = entityId;
             this.entityType = entityType;
             this.entityName = entityName;
@@ -116,6 +119,7 @@ public class ContractSyncPacket {
             this.dimension = dimension;
             this.creationTime = creationTime;
             this.isTracking = isTracking;
+            this.isCommandCreated = isCommandCreated;
             this.effects = new ArrayList<>();
         }
         
@@ -161,7 +165,8 @@ public class ContractSyncPacket {
                 contract.getEntityPosition(),
                 contract.getDimension(),
                 contract.getCreationTime(),
-                contract.isTracking()
+                contract.isTracking(),
+                contract.isCommandCreated() // 包含指令创建标识
             );
             
             // 添加效果信息
@@ -174,6 +179,11 @@ public class ContractSyncPacket {
         
         public Contract toContract() {
             Contract contract = new Contract(entityId, entityType, entityName, position, dimension);
+            
+            // 设置指令创建标识
+            if (isCommandCreated) {
+                contract.setCommandCreated(true);
+            }
             
             // 设置效果状态
             for (EffectInfo effectInfo : effects) {

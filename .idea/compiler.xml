@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/6d1c8bf4c28e697f472a83bd6add76ec4951734/mixin-0.8.5-processor.jar" />
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.github.llamalad7/mixinextras-common/0.3.6/8d992e7a746af47abb59c8232aff5a3f8f0c9f17/mixinextras-common-0.3.6.jar" />
+        </processorPath>
+        <module name="forge.main" />
+      </profile>
+    </annotationProcessing>
+  </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="fabric" options="-parameters &quot;-AoutRefMapFile=F:\Mod build\BLACKSOULS2\fabric\build\classes\java\main\black_souls_options-refmap.json&quot; -AdefaultObfuscationEnv=named:intermediary -Aquiet=true &quot;-AoutMapFileNamedIntermediary=F:\Mod build\BLACKSOULS2\fabric\build\loom-cache\mixin-map-loom.mappings.1_20_1.layered+hash.2198-v2.main.tiny&quot; -AinMapFileNamedIntermediary=C:\Users\Alittle\.gradle\caches\fabric-loom\1.20.1\loom.mappings.1_20_1.layered+hash.2198-v2\mappings.tiny" />

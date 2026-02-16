@@ -6,6 +6,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +16,8 @@ import java.util.List;
  */
 public class RabbitContract extends ContractEffect {
     private static final String EFFECT_ID = "rabbit_jump_boost";
-    private static final String DISPLAY_NAME = "兔子跳跃";
-    private static final String DESCRIPTION = "跳得更高";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.rabbit.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.rabbit.description";
     
     // 跳跃提升等级
     private int jumpBoostLevel = 2;
@@ -69,9 +70,12 @@ public class RabbitContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b跳跃提升效果："));
-        details.add(Component.literal("§7获得" + jumpBoostLevel + "级跳跃提升效果"));
-        details.add(Component.literal("§7让你能够跳得更高更远"));
+        details.add(Component.translatable("black_souls_options.contracts.rabbit.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.rabbit.effect1", jumpBoostLevel)
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.rabbit.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     
@@ -100,21 +104,7 @@ public class RabbitContract extends ContractEffect {
         // 移除玩家身上的跳跃提升效果
         player.removeEffect(MobEffects.JUMP);
     }
-    
-    /**
-     * 获取跳跃提升等级
-     */
-    public int getJumpBoostLevel() {
-        return jumpBoostLevel;
-    }
-    
-    /**
-     * 设置跳跃提升等级
-     */
-    public void setJumpBoostLevel(int level) {
-        this.jumpBoostLevel = Math.max(1, Math.min(10, level)); // 限制在1-10级之间
-    }
-    
+
     @Override
     public CompoundTag saveToNBT() {
         CompoundTag nbt = super.saveToNBT();

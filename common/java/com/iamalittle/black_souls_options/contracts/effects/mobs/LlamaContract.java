@@ -11,6 +11,7 @@ import net.minecraft.world.entity.animal.horse.Llama;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.LlamaSpit;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.chat.TextColor;
 
 import java.util.*;
 
@@ -22,8 +23,8 @@ import java.util.*;
  */
 public class LlamaContract extends ContractEffect {
     private static final String EFFECT_ID = "llama_spit_attack";
-    private static final String DISPLAY_NAME = "羊驼";
-    private static final String DESCRIPTION = "可以吐口水攻击敌人";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.llama.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.llama.description";
     
     // 吐口水伤害
     private static final float SPIT_DAMAGE = 1.0f;
@@ -135,9 +136,12 @@ public class LlamaContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6羊驼契约效果："));
-        details.add(Component.literal("§7- 可以像羊驼一样吐口水攻击敌人"));
-        details.add(Component.literal("§7- 1点伤害：）"));
+        details.add(Component.translatable("black_souls_options.contracts.llama.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.llama.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.llama.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

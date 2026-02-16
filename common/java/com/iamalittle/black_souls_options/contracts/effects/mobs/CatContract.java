@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
@@ -25,8 +26,8 @@ import java.util.UUID;
  */
 public class CatContract extends ContractEffect {
     private static final String EFFECT_ID = "cat_scare_creeper";
-    private static final String DISPLAY_NAME = "哈气";
-    private static final String DESCRIPTION = "使幻翼/苦力怕远离玩家";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.cat.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.cat.description";
     
     // 逃离距离（方块）
     private static final double FLEE_DISTANCE = 6.0;
@@ -133,11 +134,11 @@ public class CatContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6猫契约效果："));
-        details.add(Component.literal("§7哈！"));
-        details.add(Component.literal("§7- 苦力怕会在" + FLEE_DISTANCE + "格范围内逃离玩家"));
-        details.add(Component.literal("§7幻翼驱散"));
-        details.add(Component.literal("§7- 20格范围内的幻翼会被强力推开并失去仇恨"));
+        details.add(Component.translatable("black_souls_options.contracts.cat.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.cat.ha_effect").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.cat.creeper_flee", FLEE_DISTANCE).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.cat.phantom_scare").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.cat.phantom_effect").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

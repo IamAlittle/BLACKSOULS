@@ -1,20 +1,24 @@
 package com.iamalittle.black_souls_options;
 
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import com.iamalittle.black_souls_options.controllers.TargetEntityScreen;
 import com.iamalittle.black_souls_options.contracts.ContractSystem;
 import com.iamalittle.black_souls_options.input.SpitAbilityKeyManager;
 import com.iamalittle.black_souls_options.render.ContractTrackerRenderer;
+import com.iamalittle.black_souls_options.sound.ModSounds;
 import com.iamalittle.black_souls_options.wrappers.FabricEvents;
 import com.iamalittle.black_souls_options.fabric.network.FabricContractNetwork;
+import com.iamalittle.black_souls_options.utils.ItemCheckUtils;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.EntityHitResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
@@ -31,11 +35,17 @@ public class ModMain implements ClientModInitializer {
 		FabricEvents.setup();
 		ContractTrackerRenderer.setup();
 		
+		// 初始化TOML配置文件
+		BlackSoulsConfig.getInstance();
+		
 		// 初始化契约系统，启动定时更新器
 		ContractSystem.getInstance();
 		
 		// 注册网络处理器
 		FabricContractNetwork.initialize();
+		
+		// 注册自定义音效
+		ModSounds.registerFabricSounds();
 
 		// 注册吐口水能力按键
 		KeyBindingHelper.registerKeyBinding(SpitAbilityKeyManager.SPIT_ABILITY_KEY);
@@ -49,19 +59,22 @@ public class ModMain implements ClientModInitializer {
 
 		UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
 			if (world.isClientSide) {
-					// 检查玩家是否戴着铁头盔
-					if (player.getItemBySlot(EquipmentSlot.HEAD).getItem() == Items.IRON_HELMET) {
-						// 玩家戴着铁头盔，打开对话界面
-						Minecraft.getInstance().setScreen(new TargetEntityScreen(entity));
-					} else {
-						// 玩家没有戴铁头盔，显示提示信息
-						player.displayClientMessage(net.minecraft.network.chat.Component.literal("§c需要戴着铁头盔才能与实体互动"), true);
+				// 检查玩家是否满足界面打开条件
+				if (ItemCheckUtils.canOpenInterface(player)) {
+					// 玩家满足条件，打开对话界面
+					Minecraft.getInstance().setScreen(new TargetEntityScreen(entity));
+				} else {
+					// 玩家不满足条件，只在debug模式启用时显示提示信息
+					if (BlackSoulsConfig.getInstance().isEnableDebugMode()) {
+						String requirement = ItemCheckUtils.getRequirementDescription();
+						player.displayClientMessage(Component.translatable("black_souls_options.messages.interface_requirement", requirement), true);
 					}
+				}
 
 			}
 			return InteractionResult.PASS;
 		});
-		
-		logger.info("GalGame related mod initialized");
+
+		logger.info("BlackSouls Options initialized");
 	}
 }

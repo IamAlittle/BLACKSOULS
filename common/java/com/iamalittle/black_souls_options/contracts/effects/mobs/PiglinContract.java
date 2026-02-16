@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import com.iamalittle.black_souls_options.render.PiglinLovedHighlighter;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,8 +21,8 @@ import java.util.UUID;
  */
 public class PiglinContract extends ContractEffect {
     private static final String EFFECT_ID = "piglin_loved_vision";
-    private static final String DISPLAY_NAME = "守财奴";
-    private static final String DESCRIPTION = "透视附近的piglin_loved物品，显示金色边框，穿墙可见";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.piglin.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.piglin.description";
     
     // 猪灵契约玩家集合
     private static final Set<UUID> piglinContractPlayers = new HashSet<>();
@@ -95,18 +96,13 @@ public class PiglinContract extends ContractEffect {
         return player != null && piglinContractPlayers.contains(player.getUUID());
     }
     
-    /**
-     * 获取猪灵契约玩家集合（用于渲染器）
-     */
-    public static Set<UUID> getPiglinContractPlayers() {
-        return new HashSet<>(piglinContractPlayers);
-    }
-    
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6穿墙可见猪灵守护的东西（GUARDED_BY_PIGLINS、PIGLIN_LOVED标签）"));
-        details.add(Component.literal("§6镶金黑黑石过于常见，不显示"));
+        details.add(Component.translatable("black_souls_options.contracts.piglin.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.piglin.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
         return details;
     }
     

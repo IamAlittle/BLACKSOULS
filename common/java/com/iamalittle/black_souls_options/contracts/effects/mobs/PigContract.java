@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.TextColor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -18,8 +19,8 @@ import java.util.UUID;
  */
 public class PigContract extends ContractEffect {
     private static final String EFFECT_ID = "pig_basic";
-    private static final String DISPLAY_NAME = "我是猪";
-    private static final String DESCRIPTION = "我只是一只猪，你觉得我能干嘛";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.pig.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.pig.description";
     
     // 猪契约玩家集合
     private static final Set<UUID> pigContractPlayers = new HashSet<>();
@@ -62,20 +63,22 @@ public class PigContract extends ContractEffect {
     protected void onTick(Player player) {
         // 猪契约不需要每tick更新
     }
-    
-    /**
-     * 检查玩家是否拥有猪契约效果
-     */
-    public static boolean hasPigContract(Player player) {
-        return player != null && pigContractPlayers.contains(player.getUUID());
-    }
-    
+
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6猪契约效果："));
-        details.add(Component.literal("§7- 我是猪"));
-
+        details.add(Component.translatable("black_souls_options.contracts.pig.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.pig.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.pig.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.pig.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.pig.effect4")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.pig.effect5")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

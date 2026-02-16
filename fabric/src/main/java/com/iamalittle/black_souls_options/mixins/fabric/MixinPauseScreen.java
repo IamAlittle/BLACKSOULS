@@ -32,7 +32,7 @@ public class MixinPauseScreen extends Screen {
         
         // 创建契约列表按钮
         Button contractButton = Button.builder(
-            Component.literal("契约列表"),
+            Component.translatable("black_souls_options.pause_screen.contracts_button"),
             button -> {
                 // 打开契约列表界面
                 minecraft.setScreen(new com.iamalittle.black_souls_options.controllers.ContractsScreen());

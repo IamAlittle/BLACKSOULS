@@ -11,6 +11,7 @@ import net.minecraft.world.item.SuspiciousStewItem;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ import java.util.Random;
  */
 public class MooshroomContract extends ContractEffect {
     private static final String EFFECT_ID = "mooshroom_stew_giver";
-    private static final String DISPLAY_NAME = "迷之炖菜";
-    private static final String DESCRIPTION = "手持碗右键点击玩家获得随机迷之炖菜";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.mooshroom.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.mooshroom.description";
     
     // 随机数生成器
     private final Random random = new Random();
@@ -93,11 +94,16 @@ public class MooshroomContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b迷之炖菜效果："));
-        details.add(Component.literal("§a其他玩家可以手持碗右键点击你"));
-        details.add(Component.literal("§a获得随机效果的迷之炖菜"));
-        details.add(Component.literal("§6效果包括：正面和负面效果随机"));
-        details.add(Component.literal("§c注意：可能获得负面效果！"));
+        details.add(Component.translatable("black_souls_options.contracts.mooshroom.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.mooshroom.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.mooshroom.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.mooshroom.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FFAA00"))));
+        details.add(Component.translatable("black_souls_options.contracts.mooshroom.warning")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
         return details;
     }
     

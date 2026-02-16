@@ -1,0 +1,42 @@
+{
+  "cursor1": {
+    "sounds": [
+      {
+        "name": "black_souls_options:cursor1",
+        "stream": false
+      }
+    ]
+  },
+  "sword1": {
+    "sounds": [
+      {
+        "name": "black_souls_options:sword1",
+        "stream": false
+      }
+    ]
+  },
+  "sword3": {
+    "sounds": [
+      {
+        "name": "black_souls_options:sword3",
+        "stream": false
+      }
+    ]
+  },
+  "title_screen_bgm1": {
+    "sounds": [
+      {
+        "name": "black_souls_options:title_screen_bgm1",
+        "stream": true
+      }
+    ]
+  },
+  "title_screen_bgm2": {
+    "sounds": [
+      {
+        "name": "black_souls_options:title_screen_bgm2",
+        "stream": true
+      }
+    ]
+  }
+}

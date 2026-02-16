@@ -11,7 +11,13 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.food.FoodData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import org.joml.Quaternionf;
@@ -21,13 +27,23 @@ import com.iamalittle.black_souls_options.components.TypewriterText;
 import com.iamalittle.black_souls_options.utils.TextReader;
 import com.iamalittle.black_souls_options.contracts.GlobalContractManager;
 import com.iamalittle.black_souls_options.contracts.ContractManager;
+import com.iamalittle.black_souls_options.contracts.ContractManagerHelper;
+import com.iamalittle.black_souls_options.contracts.Contract;
+import com.iamalittle.black_souls_options.sound.ModSounds;
 import java.util.UUID;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.client.Minecraft;
+import org.lwjgl.glfw.GLFW;
 
 public class TargetEntityScreen extends Screen {
     private static final ResourceLocation HUD_TEXTURE = new ResourceLocation("black_souls_options", "textures/hud/window.png");
+    
+    // 自定义音效
+     private static final SoundEvent CURSOR1_SOUND = ModSounds.CURSOR1;
+     private static final SoundEvent SWORD1_SOUND = ModSounds.SWORD1;
+     private static final SoundEvent SWORD3_SOUND = ModSounds.SWORD3;
     private final Entity targetEntity;
     private final Minecraft minecraft;
     private float cameraRotation; // 相机环绕旋转角度
@@ -53,6 +69,15 @@ public class TargetEntityScreen extends Screen {
     private AnimationState nameBoxAnimationState = AnimationState.CLOSED;
     private AnimationState hudAnimationState = AnimationState.CLOSED;
     private AnimationState optionsMenuAnimationState = AnimationState.CLOSED;
+    
+    // 白屏效果控制变量
+    private boolean showWhiteFog = false;
+    private float fogOpacity = 0.0F;
+    private int flashCount = 0;
+    private long lastFlashTime = 0;
+    private boolean isFadingOut = false;
+    private long lastSoundPlayTime = 0; // 上次播放音效的时间
+    private boolean soundPlayedThisFlash = false; // 当前闪烁周期是否已播放音效
 
     private float nameBoxAnimationProgress = 0.0F;
     private float hudAnimationProgress = 0.0F;
@@ -66,11 +91,14 @@ public class TargetEntityScreen extends Screen {
     private float blinkTransparency = 1.0F; // 闪烁透明度 (0.0-1.0)
     private boolean isBlinkIncreasing = false; // 透明度是否正在增加
     private int confirmedOptionIndex = -1; // 确认的选项索引 (-1表示未确认)
+    
+    // 选项管理器
+    private OptionManager optionManager;
     private boolean hasDelayPassed = false; // 是否已经过了延迟时间
     private static final long DISPLAY_DELAY_MS = 200; // 显示延迟时间（毫秒）
 
     public TargetEntityScreen(Entity targetEntity) {
-        super(Component.literal("Target Entity Info"));
+        super(Component.translatable("black_souls_options.target_entity_screen.title"));
         this.targetEntity = targetEntity;
         this.minecraft = Minecraft.getInstance();
         this.entityDisplay = new EntityDisplay();
@@ -80,6 +108,35 @@ public class TargetEntityScreen extends Screen {
         this.typewriterText = new TypewriterText(this.minecraft.font, 50, textFontSizeScale);
         this.textStarted = false;
         this.screenOpenTime = 0;
+        
+        // 初始化选项管理器并添加默认选项
+        this.optionManager = new OptionManager(HUD_TEXTURE, this.minecraft.font);
+        
+        // 添加原来的三个选项
+        optionManager.addOption(
+            Component.translatable("black_souls_options.target_entity.contract"),
+            0xFFFFFF, // 默认白色
+            0xFFFFA0  // 已确认时金色
+        );
+        
+        optionManager.addOption(
+            Component.translatable("black_souls_options.target_entity.kill"),
+            0xFF784C, // 默认FF784C颜色
+            0xFFFFA0  // 已确认时金色
+        );
+        
+        optionManager.addOption(
+            Component.translatable("black_souls_options.target_entity.violate"),
+            0xFF784C, // 默认FF784C颜色
+            0xFFFFA0  // 已确认时金色
+        );
+        
+        // 添加离开选项
+        optionManager.addOption(
+            Component.translatable("black_souls_options.target_entity.leave"),
+            0xFFFFFF, // 默认白色
+            0xFFFFA0  // 已确认时金色
+        );
     }
 
     @Override
@@ -209,8 +266,8 @@ public class TargetEntityScreen extends Screen {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        // 只有在动画状态不是关闭的情况下才绘制
-        if (hudAnimationProgress > 0) {
+        // 只有在动画状态不是关闭的情况下才绘制，并且没有白色雾气效果
+        if (hudAnimationProgress > 0 && !showWhiteFog) {
             // 绘制各个UI部件
             drawHudBackground(guiGraphics, hudX, hudY, hudWidth, hudHeight);
             drawEntityRenderArea(guiGraphics, hudX, hudY, hudHeight);
@@ -219,15 +276,77 @@ public class TargetEntityScreen extends Screen {
             drawCloseHint(guiGraphics, hudX, hudY, hudWidth, hudHeight);
         }
 
-        // 绘制名字框（独立动画）
-        if (nameBoxAnimationProgress > 0) {
+        // 绘制名字框（独立动画）- 没有白色雾气效果时才显示
+        if (nameBoxAnimationProgress > 0 && !showWhiteFog) {
             drawNameBox(guiGraphics, hudX, hudY, hudWidth);
             drawEntityName(guiGraphics, hudX, hudY, hudWidth);
         }
 
-        // 绘制右侧选项菜单（独立动画）
-        if (optionsMenuAnimationProgress > 0) {
+        // 绘制右侧选项菜单（独立动画）- 没有白屏效果时才显示
+        if (optionsMenuAnimationProgress > 0 && !showWhiteFog) {
             drawOptionsMenu(guiGraphics, mouseX, mouseY, hudX, hudY, hudWidth, hudHeight);
+        }
+
+        // 绘制白屏效果
+        if (showWhiteFog) {
+            long currentTime = System.currentTimeMillis();
+            long elapsedTime = currentTime - lastFlashTime;
+            
+            // 闪烁逻辑
+            if (!isFadingOut) {
+                // 闪烁阶段
+                if (flashCount < 5) {
+                    // 每个闪烁周期至少0.2秒
+                    if (elapsedTime < 200) {
+                        // 显示阶段：前0.1秒显示（100%），后0.1秒不完全消失（保留30%透明度）
+                        fogOpacity = (elapsedTime % 200 < 100) ? 0.6F : 0.5F;
+                        
+                        // 在每次闪烁开始时播放史莱姆音效（闪烁开始后的前50毫秒内）
+                        if (elapsedTime < 50 && !soundPlayedThisFlash) {
+                            // 播放史莱姆音效
+                            if (this.minecraft.player != null) {
+                                this.minecraft.player.level().playSound(this.minecraft.player, 
+                                    this.minecraft.player.blockPosition(), 
+                                    SoundEvents.SLIME_HURT,
+                                    SoundSource.AMBIENT,
+                                    1.0F, 
+                                    1.0F);
+                                soundPlayedThisFlash = true;
+                                lastSoundPlayTime = currentTime;
+                            }
+                        }
+                    } else {
+                        // 完成一次闪烁，增加计数
+                        flashCount++;
+                        lastFlashTime = currentTime;
+                        fogOpacity = 1.0F; // 开始下一次闪烁时显示
+                        soundPlayedThisFlash = false; // 重置音效播放状态
+                    }
+                } else {
+                    // 完成5次闪烁，进入渐变消失阶段
+                    isFadingOut = true;
+                    lastFlashTime = currentTime;
+                    fogOpacity = 1.0F; // 从全白开始渐变
+                }
+            } else {
+                // 渐变消失阶段
+                float fadeDuration = 2000.0F; // 2秒渐变消失
+                float fadeProgress = Math.min(elapsedTime / fadeDuration, 1.0F);
+                fogOpacity = 1.0F - fadeProgress;
+                
+                // 渐变完成后，重置所有状态并关闭界面
+                if (fogOpacity <= 0.0F) {
+                    showWhiteFog = false;
+                    fogOpacity = 0.0F;
+                    flashCount = 0;
+                    isFadingOut = false;
+                    this.onClose(); // 白屏效果完成后关闭界面
+                }
+            }
+            
+            // 绘制白色矩形覆盖整个屏幕
+            int alpha = (int)(fogOpacity * 255);
+            guiGraphics.fill(0, 0, this.width, this.height, (alpha << 24) | 0xFFFFFF);
         }
 
         RenderSystem.disableBlend();
@@ -250,7 +369,7 @@ public class TargetEntityScreen extends Screen {
     private void updateTextDisplay() {
         // 延迟500毫秒后开始显示文本
         if (!textStarted && System.currentTimeMillis() - screenOpenTime > 500) {
-            String randomText = TextReader.getRandomText("entity_descriptions");
+            String randomText = TextReader.getRandomText();
             if (!randomText.isEmpty()) {
                 typewriterText.setText(randomText);
                 typewriterText.start();
@@ -633,12 +752,26 @@ public class TargetEntityScreen extends Screen {
 
     @Override
     public void onClose() {
+        // 默认不播放关闭音效（只有点击离开和ESC键时才播放）
+        onClose(false);
+    }
+
+    /**
+     * 关闭界面，可选择是否播放关闭音效
+     * @param playCloseSound 是否播放关闭音效
+     */
+    private void onClose(boolean playCloseSound) {
         // 标记界面正在关闭
         isClosing = true;
 
         // 停止文本打字机效果
         if (textStarted && typewriterText != null) {
             textStarted = false;
+        }
+
+        // 只有在明确指定需要播放关闭音效时才播放
+        if (playCloseSound) {
+            this.playCloseSound();
         }
 
         // 启动关闭动画
@@ -657,10 +790,130 @@ public class TargetEntityScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == 256) { // ESC键
-            this.onClose();
+        // ESC键关闭界面 - 播放关闭音效
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+            this.onClose(true);
             return true;
         }
+        
+        // 键盘导航：↑↓键选择选项，回车键确认
+        if (keyCode == GLFW.GLFW_KEY_UP || keyCode == GLFW.GLFW_KEY_DOWN) {
+            // 获取选项数量
+            int optionCount = optionManager.getOptions().size();
+            if (optionCount > 0) {
+                if (selectedOptionIndex == -1) {
+                    // 如果还没有选择任何选项，默认选择第一个
+                    selectedOptionIndex = 0;
+                } else {
+                    // 根据方向键移动选择
+                    if (keyCode == GLFW.GLFW_KEY_UP) {
+                        selectedOptionIndex = (selectedOptionIndex - 1 + optionCount) % optionCount;
+                    } else if (keyCode == GLFW.GLFW_KEY_DOWN) {
+                        selectedOptionIndex = (selectedOptionIndex + 1) % optionCount;
+                    }
+                }
+                
+                // 重置确认状态
+                confirmedOptionIndex = -1;
+                
+                // 播放选项切换音效
+                playCursorSound();
+                
+                // 重置闪烁时间
+                lastBlinkTime = System.currentTimeMillis();
+                
+                return true;
+            }
+        } else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+            // 回车键确认当前选择的选项
+            if (selectedOptionIndex != -1) {
+                confirmedOptionIndex = selectedOptionIndex;
+                
+                // 播放确认选项音效
+                playConfirmSound();
+                
+                // 根据选项类型执行不同操作
+                if (selectedOptionIndex == 0) {
+                    // 创建契约 - 发送网络请求到服务器
+                    if (targetEntity != null) {
+                        // 从实体中提取所需信息创建契约
+                        UUID entityId = targetEntity.getUUID();
+                        ResourceLocation entityTypeKey = BuiltInRegistries.ENTITY_TYPE.getKey(targetEntity.getType());
+                        String entityType = entityTypeKey.toString(); // 使用资源位置ID，如"minecraft:rabbit"
+                        
+                        // 获取实体的友好名称：优先使用自定义名称，其次使用显示名称，最后使用本地化类型名称
+                        String entityName;
+                        if (targetEntity.hasCustomName()) {
+                            // 获取原始的自定义名称Component
+                            Component customName = targetEntity.getCustomName();
+                            // 使用JSON序列化来完整保留所有样式信息
+                            entityName = Component.Serializer.toJson(customName);
+                        } else {
+                            // 使用实体的显示名称（会返回本地化的名称）
+                            entityName = targetEntity.getDisplayName().getString();
+                            
+                            // 如果显示名称仍然是技术名称，尝试使用类型名称
+                            if (entityName.contains(":") || entityName.startsWith("entity.")) {
+                                // 获取本地化的实体类型名称
+                                entityName = targetEntity.getType().getDescription().getString();
+                            }
+                        }
+                        
+                        Vec3 position = targetEntity.position();
+                        String dimension = targetEntity.level().dimension().location().toString();
+                        
+                        // 发送契约创建请求到服务器
+                        ContractNetworkHandler.sendContractCreateRequest(entityId, entityType, entityName, position, dimension);
+                    }
+                    // 关闭界面
+                    this.onClose();
+                } else if (selectedOptionIndex == 1) {
+                    // 发送杀害攻击请求
+                    if (targetEntity != null) {
+                        // 获取目标实体的ID
+                        int targetEntityId = targetEntity.getId();
+                        // 发送杀害攻击请求到服务器
+                        ContractNetworkHandler.sendKillAttackRequest(targetEntityId);
+                    }
+                    // 关闭界面
+                    this.onClose();
+                } else if (selectedOptionIndex == 2) {
+                    // 应用侵犯效果：扣除6点饥饿值并给予虚弱效果
+                    if (minecraft.player != null) {
+                        // 扣除6点饥饿值
+                        FoodData foodData = minecraft.player.getFoodData();
+                        int currentFoodLevel = foodData.getFoodLevel();
+                        int newFoodLevel = Math.max(0, currentFoodLevel - 6);
+                        foodData.setFoodLevel(newFoodLevel);
+                        
+                        // 给予虚弱效果（持续30秒，等级1）
+                        minecraft.player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 600, 0)); // 600 ticks = 30秒
+                    }
+                    
+                    // 激活白屏效果并立即隐藏所有UI
+                    showWhiteFog = true;
+                    fogOpacity = 0.0F;
+                    flashCount = 0;
+                    lastFlashTime = System.currentTimeMillis();
+                    isFadingOut = false;
+                    soundPlayedThisFlash = false; // 重置音效播放状态
+                    
+                    // 立即关闭所有UI动画，确保界面完全隐藏
+                    hudAnimationProgress = 0.0F;
+                    nameBoxAnimationProgress = 0.0F;
+                    optionsMenuAnimationProgress = 0.0F;
+                    
+                    // 防止重复触发：设置确认状态为-1，这样即使再次点击也不会触发
+                    confirmedOptionIndex = -1;
+                } else if (selectedOptionIndex == 3) {
+                    // 离开选项：直接关闭界面 - 播放关闭音效
+                    this.onClose(true);
+                }
+                
+                return true;
+            }
+        }
+        
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -675,41 +928,28 @@ public class TargetEntityScreen extends Screen {
                 int hudX = 0;
                 int hudY = this.height - hudHeight;
 
-                // 重新计算选项框尺寸和位置
-                String option1 = "契约";
-                String option2 = "选项 2";
-                int option1Width = this.font.width(option1);
-                int option2Width = this.font.width(option2);
-                int maxOptionWidth = Math.max(option1Width, option2Width);
-
-                int optionPadding = 10; // 左右边距
-                int optionBoxWidth = Math.max(50, maxOptionWidth + optionPadding * 2);
-                int optionSpacing = 10; // 选项间距
-                int optionHeight = this.font.lineHeight; // 选项文本高度
-                int verticalPadding = 16; // 上下边距
-                int optionCount = 2; // 当前选项数量
-                int optionBoxHeight = optionHeight * optionCount + optionSpacing * (optionCount - 1) + verticalPadding * 2;
+                // 使用OptionManager计算选项框尺寸和位置
+                int optionBoxWidth = optionManager.calculateOptionBoxWidth();
+                int optionBoxHeight = optionManager.calculateOptionBoxHeight();
 
                 int optionBoxX = hudX + hudWidth - optionBoxWidth - 1;
                 int centerY = hudY - optionBoxHeight / 2 - 3; // 向上移动3像素，增加与下方文本框的间距
                 int optionBoxY = centerY - optionBoxHeight / 2;
 
-                // 计算选项位置
-                int totalOptionsHeight = optionHeight * optionCount + optionSpacing * (optionCount - 1);
-                int startY = optionBoxY + (optionBoxHeight - totalOptionsHeight) / 2;
-                int option1Y = startY;
-                int option2Y = startY + optionHeight + optionSpacing;
-
-                int optionClickHeight = optionHeight + 4; // 选项点击区域高度
-
-                // 检查点击的是哪个选项
-                if (mouseX >= optionBoxX && mouseX <= optionBoxX + optionBoxWidth &&
-                    mouseY >= option1Y - 2 && mouseY <= option1Y + optionClickHeight) {
+                // 使用OptionManager检测点击的选项
+                int clickedOptionIndex = optionManager.getClickedOption((int)mouseX, (int)mouseY, optionBoxX, optionBoxY, optionBoxWidth, optionBoxHeight, this.font.lineHeight);
+                if (clickedOptionIndex != -1) {
                     // 第一次点击选中，第二次点击相同选项则确认
-                    if (selectedOptionIndex == 0) {
+                    if (selectedOptionIndex == clickedOptionIndex) {
                         // 第二次点击相同选项，确认选择
-                        confirmedOptionIndex = 0;
-                        // 创建契约 - 发送网络请求到服务器
+                        confirmedOptionIndex = clickedOptionIndex;
+                        
+                        // 播放确认选项音效
+                        playConfirmSound();
+                        
+                        // 根据选项类型执行不同操作
+                        if (clickedOptionIndex == 0) {
+                            // 创建契约 - 发送网络请求到服务器
                             if (targetEntity != null) {
                                 // 从实体中提取所需信息创建契约
                                 UUID entityId = targetEntity.getUUID();
@@ -740,27 +980,80 @@ public class TargetEntityScreen extends Screen {
                                 // 发送契约创建请求到服务器
                                 ContractNetworkHandler.sendContractCreateRequest(entityId, entityType, entityName, position, dimension);
                             }
-                        // 关闭界面
-                        this.onClose();
+                            // 关闭界面
+                            this.onClose();
+                        } else if (clickedOptionIndex == 1) {
+                            // 发送杀害攻击请求
+                            if (targetEntity != null) {
+                                // 获取目标实体的ID
+                                int targetEntityId = targetEntity.getId();
+                                // 发送杀害攻击请求到服务器
+                                ContractNetworkHandler.sendKillAttackRequest(targetEntityId);
+                            }
+                            // 关闭界面
+                            this.onClose();
+                        } else if (clickedOptionIndex == 2) {
+                            // 应用侵犯效果：扣除6点饥饿值并给予虚弱效果
+                            if (minecraft.player != null) {
+                                // 扣除6点饥饿值
+                                FoodData foodData = minecraft.player.getFoodData();
+                                int currentFoodLevel = foodData.getFoodLevel();
+                                int newFoodLevel = Math.max(0, currentFoodLevel - 6);
+                                foodData.setFoodLevel(newFoodLevel);
+                                
+                                // 给予虚弱效果（持续30秒，等级1）
+                                minecraft.player.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 600, 0)); // 600 ticks = 30秒
+                                
+                                // 检查玩家是否契约了目标实体，如果是则自动移除契约
+                                ContractManager contractManager = ContractManagerHelper.getAppropriateContractManager(minecraft.player);
+                                if (contractManager != null && targetEntity != null) {
+                                    UUID targetUUID = targetEntity.getUUID();
+                                    // 查找与目标实体相关的契约
+                                    Optional<Contract> contractOptional = contractManager.getAllContracts().stream()
+                                        .filter(contract -> targetUUID.equals(contract.getEntityId()))
+                                        .findFirst();
+                                    
+                                    if (contractOptional.isPresent()) {
+                                        Contract contract = contractOptional.get();
+                                        
+                                        // 在客户端静默停用效果（不发送停用消息，避免重复）
+                                        contract.deactivateEffectsSilently(minecraft.player);
+                                        
+                                        // 在客户端删除契约（静默删除，不发送消息）
+                                        contractManager.removeContract(contract.getEntityId());
+                                        
+                                        // 向服务器发送删除请求，使用与/bs contract del相同的处理方式
+                                        ContractNetworkHandler.sendContractDeleteRequest(contract.getEntityId());
+                                    }
+                                }
+                            }
+                            
+                            // 激活白屏效果并立即隐藏所有UI
+                            showWhiteFog = true;
+                            fogOpacity = 0.0F;
+                            flashCount = 0;
+                            lastFlashTime = System.currentTimeMillis();
+                            isFadingOut = false;
+                            soundPlayedThisFlash = false; // 重置音效播放状态
+                            
+                            // 立即关闭所有UI动画，确保界面完全隐藏
+                            hudAnimationProgress = 0.0F;
+                            nameBoxAnimationProgress = 0.0F;
+                            optionsMenuAnimationProgress = 0.0F;
+                            
+                            // 防止重复触发：设置确认状态为-1，这样即使再次点击也不会触发
+                            confirmedOptionIndex = -1;
+                        } else if (clickedOptionIndex == 3) {
+                            // 离开选项：直接关闭界面 - 播放关闭音效
+                            this.onClose(true);
+                        }
                     } else {
                         // 第一次点击或点击不同选项，选择但不确认
-                        selectedOptionIndex = 0;
+                        selectedOptionIndex = clickedOptionIndex;
                         confirmedOptionIndex = -1; // 重置确认状态
-                    }
-                    lastBlinkTime = System.currentTimeMillis(); // 重置闪烁时间
-                    return true;
-                } else if (mouseX >= optionBoxX && mouseX <= optionBoxX + optionBoxWidth &&
-                           mouseY >= option2Y - 2 && mouseY <= option2Y + optionClickHeight) {
-                    // 第一次点击选中，第二次点击相同选项则确认
-                    if (selectedOptionIndex == 1) {
-                        // 第二次点击相同选项，确认选择
-                        confirmedOptionIndex = 1;
-                        // 关闭界面
-                        this.onClose();
-                    } else {
-                        // 第一次点击或点击不同选项，选择但不确认
-                        selectedOptionIndex = 1;
-                        confirmedOptionIndex = -1; // 重置确认状态
+                        
+                        // 播放选项切换音效
+                        playCursorSound();
                     }
                     lastBlinkTime = System.currentTimeMillis(); // 重置闪烁时间
                     return true;
@@ -815,6 +1108,51 @@ public class TargetEntityScreen extends Screen {
     }
 
     /**
+     * 播放选项切换音效
+     */
+    private void playCursorSound() {
+        if (this.minecraft.player != null) {
+            this.minecraft.player.level().playSound(this.minecraft.player, 
+                this.minecraft.player.blockPosition(), 
+                CURSOR1_SOUND,
+                SoundSource.PLAYERS,
+                1.75F, // 音量175%
+                0.5F   // 音调50%
+            );
+        }
+    }
+    
+    /**
+     * 播放确认选项音效
+     */
+    private void playConfirmSound() {
+        if (this.minecraft.player != null) {
+            this.minecraft.player.level().playSound(this.minecraft.player, 
+                this.minecraft.player.blockPosition(), 
+                SWORD1_SOUND,
+                SoundSource.PLAYERS,
+                1.65F, // 音量165%
+                1.75F  // 音调175%
+            );
+        }
+    }
+    
+    /**
+     * 播放关闭界面音效
+     */
+    private void playCloseSound() {
+        if (this.minecraft.player != null) {
+            this.minecraft.player.level().playSound(this.minecraft.player, 
+                this.minecraft.player.blockPosition(), 
+                SWORD3_SOUND,
+                SoundSource.PLAYERS,
+                1.75F, // 音量175%
+                1.75F  // 音调175%
+            );
+        }
+    }
+
+    /**
      * 绘制右侧选项菜单
      */
     private void drawOptionsMenu(GuiGraphics guiGraphics, int mouseX, int mouseY, int hudX, int hudY, int hudWidth, int hudHeight) {
@@ -825,26 +1163,14 @@ public class TargetEntityScreen extends Screen {
         int screenWidth = this.width;
         int screenHeight = this.height;
 
-        // 绘制选项文本
-        String option1 = "契约";
-        String option2 = "选项 2";
-
         // 计算最长选项的宽度，用于动态调整选项框宽度
-        int option1Width = this.font.width(option1);
-        int option2Width = this.font.width(option2);
-        int maxOptionWidth = Math.max(option1Width, option2Width);
+        int maxOptionWidth = optionManager.calculateMaxOptionWidth();
 
         // 动态调整选项框宽度，确保有足够的边距
-        int minOptionBoxWidth = 55; // 最小宽度
-        int optionPadding = 10; // 左右边距
-        int optionBoxWidth = Math.max(minOptionBoxWidth, maxOptionWidth + optionPadding * 2);
+        int optionBoxWidth = optionManager.calculateOptionBoxWidth();
 
         // 动态调整选项框高度，根据选项数量和间距计算
-        int optionSpacing = 10; // 选项间距
-        int optionHeight = this.font.lineHeight; // 选项文本高度
-        int verticalPadding = 16; // 上下边距（与左右边距一致）
-        int optionCount = 2; // 当前选项数量
-        int optionBoxHeight = optionHeight * optionCount + optionSpacing * (optionCount - 1) + verticalPadding * 2;
+        int optionBoxHeight = optionManager.calculateOptionBoxHeight();
 
         int optionBoxX = hudX + hudWidth - optionBoxWidth - 1; // 距离游戏框右侧边缘像素
         int centerY = hudY - optionBoxHeight / 2 - 3; // 向上移动3像素，增加与下方文本框的间距
@@ -894,122 +1220,32 @@ public class TargetEntityScreen extends Screen {
         // 绘制选项框边框 - 复用主HUD的边框逻辑
         drawMenuBorder(guiGraphics, optionBoxX, optionBoxY, optionBoxWidth, animatedOptionBoxHeight);
         
-        // 计算选项位置 - 垂直居中对齐（选项+间隔作为一个整体居中）
-        int totalOptionsHeight = optionHeight * optionCount + optionSpacing * (optionCount - 1);
-        int startY = optionBoxY + (optionBoxHeight - totalOptionsHeight) / 2;
-        int option1Y = startY;
-        int option2Y = startY + optionHeight + optionSpacing;
+        // 设置OptionManager的动画状态
+        optionManager.setAnimationProgress(progress);
+        optionManager.setClosing(isClosing);
+        optionManager.setSelectedOptionIndex(selectedOptionIndex);
+        optionManager.setConfirmedOptionIndex(confirmedOptionIndex);
         
-        // 检查鼠标悬停状态 - 确保选项区域不会重叠
-        int optionClickHeight = optionHeight + 4; // 选项点击区域高度
-        boolean isOption1Hovered = mouseX >= optionBoxX && mouseX <= optionBoxX + optionBoxWidth &&
-                                  mouseY >= option1Y - 2 && mouseY <= option1Y + optionClickHeight &&
-                                  mouseY >= optionBoxY; // 确保在动画展开范围内
-        boolean isOption2Hovered = mouseX >= optionBoxX && mouseX <= optionBoxX + optionBoxWidth &&
-                                  mouseY >= option2Y - 2 && mouseY <= option2Y + optionClickHeight &&
-                                  mouseY >= optionBoxY; // 确保在动画展开范围内
+        // 使用OptionManager绘制选项
+        optionManager.drawOptions(guiGraphics, optionBoxX, optionBoxY, optionBoxWidth, animatedOptionBoxHeight, blinkTransparency);
         
-        // 在关闭过程中不渲染选项文本和光标
-            if (!isClosing) {
-                // 绘制选中选项的闪烁效果
-                if (selectedOptionIndex >= 0) {
-                    // 设置使用HUD纹理
-                    RenderSystem.setShader(GameRenderer::getPositionTexShader);
-                    RenderSystem.setShaderTexture(0, HUD_TEXTURE);
-                    RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, blinkTransparency); // 使用闪烁透明度
-                    RenderSystem.enableBlend();
-                    RenderSystem.defaultBlendFunc();
-                    
-                    // 闪烁框的UV坐标 (64,64) 到 (95,95)
-                    int blinkU = 64;
-                    int blinkV = 64;
-                    int blinkWidth = 32;
-                    int blinkHeight = 32;
-                    
-                    if (selectedOptionIndex == 0) {
-                        // 绘制选项1的闪烁框
-                        int blinkBoxX = optionBoxX + (optionBoxWidth - option1Width) / 2 - 5;
-                        int blinkBoxY = option1Y - 2;
-                        int blinkBoxWidth = option1Width + 10;
-                        int blinkBoxHeight = optionHeight + 4;
-                        
-                        // 绘制缩放的闪烁框，保持原始纹理的UV比例
-                        guiGraphics.blit(
-                            HUD_TEXTURE,
-                            blinkBoxX,
-                            blinkBoxY,
-                            blinkBoxWidth,
-                            blinkBoxHeight,
-                            blinkU,
-                            blinkV,
-                            blinkWidth,
-                            blinkHeight,
-                            128, // 纹理总宽度
-                            128  // 纹理总高度
-                        );
-                    } else if (selectedOptionIndex == 1) {
-                        // 绘制选项2的闪烁框
-                        int blinkBoxX = optionBoxX + (optionBoxWidth - option2Width) / 2 - 5;
-                        int blinkBoxY = option2Y - 2;
-                        int blinkBoxWidth = option2Width + 10;
-                        int blinkBoxHeight = optionHeight + 4;
-                        
-                        guiGraphics.blit(
-                            HUD_TEXTURE,
-                            blinkBoxX,
-                            blinkBoxY,
-                            blinkBoxWidth,
-                            blinkBoxHeight,
-                            blinkU,
-                            blinkV,
-                            blinkWidth,
-                            blinkHeight,
-                            128,
-                            128
-                        );
-                    }
-                    
-                    RenderSystem.disableBlend();
-                    RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                }
-                
-                // 绘制选项1 - 根据状态显示不同颜色：悬停（红色）、已确认（金色）、普通（白色）
-                int option1Color = 0xFFFFFF; // 默认白色
-                if (isOption1Hovered) {
-                    option1Color = 0xFFA0A0; // 悬停时红色
-                }
-                if (confirmedOptionIndex == 0) {
-                    option1Color = 0xFFFFA0; // 已确认时金色
-                }
-                
-                guiGraphics.drawString(
-                        this.font,
-                        option1,
-                        optionBoxX + (optionBoxWidth - option1Width) / 2, // 水平居中
-                        option1Y,
-                        option1Color
-                );
-                
-                // 绘制选项2 - 根据状态显示不同颜色：悬停（红色）、已确认（金色）、普通（白色）
-                int option2Color = 0xFFFFFF; // 默认白色
-                if (isOption2Hovered) {
-                    option2Color = 0xFFA0A0; // 悬停时红色
-                }
-                if (confirmedOptionIndex == 1) {
-                    option2Color = 0xFFFFA0; // 已确认时金色
-                }
-                
-                guiGraphics.drawString(
-                        this.font,
-                        option2,
-                        optionBoxX + (optionBoxWidth - option2Width) / 2, // 水平居中
-                        option2Y,
-                        option2Color
-                );
-                
-                // 在选项前绘制三角形光标（RPG Maker风格）
-                drawTriangleCursor(guiGraphics, optionBoxX + (optionBoxWidth - maxOptionWidth) / 2 - 15, isOption1Hovered ? option1Y : option2Y);
+        // 绘制三角形光标（RPG Maker风格）
+        int cursorY;
+        int hoveredIndex = optionManager.getHoveredOptionIndex(mouseX, mouseY, optionBoxX, optionBoxY, optionBoxWidth, font.lineHeight);
+        
+        if (hoveredIndex >= 0) {
+            // 鼠标悬停在某个选项上
+            cursorY = optionBoxY + 16 + hoveredIndex * (font.lineHeight + 10);
+        } else {
+            // 默认根据选中的选项显示光标
+            if (selectedOptionIndex >= 0) {
+                cursorY = optionBoxY + 16 + selectedOptionIndex * (font.lineHeight + 10);
+            } else {
+                cursorY = optionBoxY + 16; // 默认第一个选项位置
             }
+        }
+        
+        drawTriangleCursor(guiGraphics, optionBoxX + (optionBoxWidth - maxOptionWidth) / 2 - 15, cursorY);
     }
     
     /**

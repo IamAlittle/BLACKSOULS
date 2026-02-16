@@ -10,6 +10,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 
 /**
@@ -21,8 +22,8 @@ import java.util.*;
  */
 public class HuskContract extends ContractEffect {
     private static final String EFFECT_ID = "husk_hunger_effect";
-    private static final String DISPLAY_NAME = "尸壳之怒";
-    private static final String DESCRIPTION = "攻击时使目标饥饿，且不会因太阳着火";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.husk.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.husk.description";
     
     // 饥饿效果持续时间（秒）
     private static final int HUNGER_DURATION = 10;
@@ -75,10 +76,6 @@ public class HuskContract extends ContractEffect {
         if (player == null || !player.isAlive() || player.level() == null) {
             return;
         }
-        
-        // 尸壳契约不会因为晒太阳着火，所以不需要处理太阳着火逻辑
-        // 继承僵尸契约的其他逻辑（如感染村民）通过攻击事件处理器处理
-        // 检查是否在水中，如果在水中则受到伤害
         checkWaterDamage(player);
     }
     
@@ -183,13 +180,20 @@ public class HuskContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6尸壳契约效果："));
-        details.add(Component.literal("§7继承僵尸契约的感染村民效果"));
-        details.add(Component.literal("§7- 攻击村民时有30%概率将其转化为僵尸村民"));
-        details.add(Component.literal("§7尸壳专属效果："));
-        details.add(Component.literal("§7- 不会因为晒太阳着火"));
-        details.add(Component.literal("§7- 攻击时有" + (int)(HUNGER_CHANCE * 100) + "%概率使目标获得饥饿效果"));
-        details.add(Component.literal("§c- 碰水会掉血"));
+        details.add(Component.translatable("black_souls_options.contracts.husk.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.husk.inherit_zombie")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.husk.zombie_effect")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.husk.exclusive_effects")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.husk.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.husk.effect2", (int)(HUNGER_CHANCE * 100))
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.husk.negative_effect")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
         return details;
     }
 }

@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.ContractDetector;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
@@ -20,8 +21,8 @@ import java.util.List;
  */
 public class TadpoleContract extends ContractEffect {
     private static final String EFFECT_ID = "tadpole_mom_question";
-    private static final String DISPLAY_NAME = "妈妈在哪里";
-    private static final String DESCRIPTION = "攻击时会询问目标是不是妈妈";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.tadpole.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.tadpole.description";
 
     public TadpoleContract() {
         super(EFFECT_ID, DISPLAY_NAME, DESCRIPTION);
@@ -107,8 +108,8 @@ public class TadpoleContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6蝌蚪契约效果："));
-        details.add(Component.literal("§a攻击时会自动在公屏聊天中询问目标是不是妈妈"));
+        details.add(Component.translatable("black_souls_options.contracts.tadpole.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.tadpole.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 

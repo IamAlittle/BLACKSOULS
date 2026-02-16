@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
@@ -24,8 +25,8 @@ import java.util.UUID;
  */
 public class CaveSpiderContract extends ContractEffect {
     private static final String EFFECT_ID = "cave_spider_poison";
-    private static final String DISPLAY_NAME = "我的武器可是淬毒了的！";
-    private static final String DESCRIPTION = "攻击时使目标中毒";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.cave_spider.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.cave_spider.description";
     
     // 中毒持续时间（秒）
     private static final int POISON_DURATION = 10;
@@ -121,12 +122,12 @@ public class CaveSpiderContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6洞穴蜘蛛契约效果："));
-        details.add(Component.literal("§2毒液攻击"));
-        details.add(Component.literal("§2- 攻击时使目标中毒"));
-        details.add(Component.literal("§2- 中毒持续" + POISON_DURATION + "秒"));
-        details.add(Component.literal("§2爬墙能力"));
-        details.add(Component.literal("§2- 接触墙壁时按跳跃键向上爬"));
+        details.add(Component.translatable("black_souls_options.contracts.cave_spider.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.cave_spider.poison_attack").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.cave_spider.attack_poison").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.cave_spider.poison_duration", POISON_DURATION).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.cave_spider.wall_climb").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.cave_spider.climb_effect").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

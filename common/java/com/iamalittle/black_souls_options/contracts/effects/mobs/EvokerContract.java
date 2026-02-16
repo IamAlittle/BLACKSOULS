@@ -5,6 +5,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.sounds.SoundEvents;
@@ -20,8 +21,8 @@ import java.util.*;
  */
 public class EvokerContract extends ContractEffect {
     private static final String EFFECT_ID = "evoker_death_totem";
-    private static final String DISPLAY_NAME = "唤魔者不死图腾";
-    private static final String DESCRIPTION = "死亡时检查背包中的不死图腾并触发效果";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.evoker.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.evoker.description";
 
     public static final Set<UUID> evokerDeathTotemEffectSet = new HashSet<>();
 
@@ -61,10 +62,10 @@ public class EvokerContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b不死图腾效果："));
-        details.add(Component.literal("§7死亡时检查背包中是否有不死图腾"));
-        details.add(Component.literal("§7有则触发效果并消耗一个图腾"));
-        details.add(Component.literal("§7无需手持图腾"));
+        details.add(Component.translatable("black_souls_options.contracts.evoker.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.evoker.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.evoker.effect2").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.evoker.effect3").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     
@@ -130,7 +131,7 @@ public class EvokerContract extends ContractEffect {
         
         // 发送消息
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.literal("§6唤魔者契约：背包中的不死图腾已触发！"));
+            serverPlayer.sendSystemMessage(Component.translatable("black_souls_options.contracts.evoker.totem_triggered").withStyle(style -> style.withColor(TextColor.parseColor("#FFAA00"))));
         }
         
         return true;

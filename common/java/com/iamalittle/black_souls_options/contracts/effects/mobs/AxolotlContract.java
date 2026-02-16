@@ -1,6 +1,8 @@
 package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
+import com.iamalittle.black_souls_options.network.ContractNetworkHandler;
+import com.iamalittle.black_souls_options.network.FeignDeathSyncPacket;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -12,14 +14,16 @@ import net.minecraft.world.food.FoodData;
 
 import java.util.*;
 
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
+
 /**
  * 美西螈契约效果 - 装死与生命恢复
  * 玩家契约美西螈后，停止移动时会躺地上装死，同时获得生命恢复效果
  */
 public class AxolotlContract extends ContractEffect {
     private static final String EFFECT_ID = "axolotl_feign_death";
-    private static final String DISPLAY_NAME = "美西螈装死";
-    private static final String DESCRIPTION = "消耗饥饿值装死,期间消除敌对生物仇恨,受伤时结束装死";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.axolotl.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.axolotl.description";
     
     // 移动检测相关变量
     private BlockPos lastPosition = null; // 玩家上次位置
@@ -81,7 +85,7 @@ public class AxolotlContract extends ContractEffect {
                 if (!player.level().isClientSide) {
                     // 同步装死状态到所有客户端
                     syncFeignDeathState(player, false);
-                    System.out.println("[BLACKSOULS] Feign death state ended due to contract deactivation: " + player.getScoreboardName());
+                    BlackSoulsConfig.debug("[BLACKSOULS] Feign death state ended due to contract deactivation: " + player.getScoreboardName());
                 }
             }
             
@@ -297,15 +301,14 @@ public class AxolotlContract extends ContractEffect {
         
         try {
             // 创建装死状态同步数据包
-            com.iamalittle.black_souls_options.network.FeignDeathSyncPacket packet = 
-                new com.iamalittle.black_souls_options.network.FeignDeathSyncPacket(player.getUUID(), isFeigningDeath);
+            FeignDeathSyncPacket packet = new FeignDeathSyncPacket(player.getUUID(), isFeigningDeath);
             
             // 通过契约网络处理器发送同步数据包
-            com.iamalittle.black_souls_options.network.ContractNetworkHandler.broadcastFeignDeathState(packet);
+            ContractNetworkHandler.broadcastFeignDeathState(packet);
             
-            System.out.println("[BLACKSOULS] Feign death state synced: " + player.getScoreboardName() + " -> " + isFeigningDeath);
+            BlackSoulsConfig.debug("[BLACKSOULS] Feign death state synced: " + player.getScoreboardName() + " -> " + isFeigningDeath);
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to sync feign death state: " + e.getMessage());
+            BlackSoulsConfig.error("[BLACKSOULS] Failed to sync feign death state: " + e.getMessage());
         }
     }
     
@@ -320,19 +323,17 @@ public class AxolotlContract extends ContractEffect {
             feigningDeathPlayers.remove(packet.getPlayerUUID());
         }
         
-        System.out.println("[BLACKSOULS] Feign death state updated on client: " + packet.getPlayerUUID() + " -> " + packet.isFeigningDeath());
+        BlackSoulsConfig.debug("[BLACKSOULS] Feign death state updated on client: " + packet.getPlayerUUID() + " -> " + packet.isFeigningDeath());
     }
     
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b美西螈契约效果："));
-        details.add(Component.literal("§7基础契约效果"));
-        details.add(Component.literal("§7- 玩家静止不动开始装死"));
-        details.add(Component.literal("§7- 必须在地上才能装死（不在水中、空中或梯子上）"));
-        details.add(Component.literal("§7- 装死时每秒消耗1点饥饿值"));
-        details.add(Component.literal("§7- 饥饿值掉完不会结束装死"));
-        details.add(Component.literal("§7- 受伤时会强制结束装死状态"));
+        details.add(Component.translatable("black_souls_options.contracts.axolotl.effect_title").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.axolotl.feign_death_effect").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.axolotl.hunger_consumption").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.axolotl.regeneration_effect").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.axolotl.damage_cancellation").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#FF5555"))));
         return details;
     }
     
@@ -373,9 +374,7 @@ public class AxolotlContract extends ContractEffect {
         if (nbt.contains("isFeigningDeath")) {
             isFeigningDeath = nbt.getBoolean("isFeigningDeath");
             if (isFeigningDeath) {
-                // 重新添加到装死玩家集合
-                // 注意：这里需要玩家实例，但加载时可能没有玩家实例
-                // 实际使用时，会在onActivate中重新设置
+
             }
         }
         if (nbt.contains("lastHungerTickTime")) {

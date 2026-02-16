@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.ContractDetector;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,8 +24,8 @@ import java.util.List;
  */
 public class VexContract extends ContractEffect {
     private static final String EFFECT_ID = "vex_immune";
-    private static final String DISPLAY_NAME = "幽灵的庇护";
-    private static final String DESCRIPTION = "使恼鬼无法攻击玩家";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.vex.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.vex.description";
     
     // 保护范围（格数）
     private static final double VERTICAL_RANGE = 8.0;    // 垂直距离8格
@@ -150,10 +151,10 @@ public class VexContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6恼鬼契约效果："));
-        details.add(Component.literal("§a- 水平范围：" + HORIZONTAL_RANGE + "格"));
-        details.add(Component.literal("§a- 垂直范围：" + VERTICAL_RANGE + "格"));
-        details.add(Component.literal("§a- 使范围内的恼鬼无法攻击玩家"));
+        details.add(Component.translatable("black_souls_options.contracts.vex.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.vex.effect1", HORIZONTAL_RANGE).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.vex.effect2", VERTICAL_RANGE).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.vex.effect3").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 

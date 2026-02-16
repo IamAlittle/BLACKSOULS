@@ -16,23 +16,25 @@ import java.util.Random;
 /**
  * 文本读取器 - 负责从资源文件中读取多段文本
  * 支持逐字显示效果和随机文本选择
+ * 支持材质包替换文本内容
  */
 public class TextReader {
     private static final Random RANDOM = new Random();
     
     /**
-     * 根据语言和文件名读取文本文件
-     * @param fileName 文件名（不含扩展名）
+     * 根据当前语言读取文本文件
+     * 文件路径：assets/black_souls_options/texts/[languageCode].txt
+     * 材质包可通过创建相同路径的文件来替换文本内容
      * @return 文本段落列表
      */
-    public static List<String> readTexts(String fileName) {
+    public static List<String> readTexts() {
         List<String> texts = new ArrayList<>();
         
         // 获取当前语言
         String language = getCurrentLanguage();
         
         // 构建资源路径
-        String resourcePath = "texts/" + language + "/" + fileName + ".txt";
+        String resourcePath = "texts/" + language + ".txt";
         ResourceLocation resourceLocation = new ResourceLocation("black_souls_options", resourcePath);
         
         try {
@@ -48,7 +50,7 @@ public class TextReader {
         } catch (IOException e) {
             // 如果指定语言文件不存在，尝试读取默认语言（英语）
             if (!language.equals("en_us")) {
-                texts = readDefaultTexts(fileName);
+                texts = readDefaultTexts();
             }
         }
         
@@ -58,9 +60,9 @@ public class TextReader {
     /**
      * 读取默认语言（英语）的文本文件
      */
-    private static List<String> readDefaultTexts(String fileName) {
+    private static List<String> readDefaultTexts() {
         List<String> texts = new ArrayList<>();
-        String resourcePath = "texts/en_us/" + fileName + ".txt";
+        String resourcePath = "texts/en_us.txt";
         ResourceLocation resourceLocation = new ResourceLocation("black_souls_options", resourcePath);
         
         try {
@@ -123,8 +125,8 @@ public class TextReader {
     /**
      * 从文本列表中随机选择一段文本
      */
-    public static String getRandomText(String fileName) {
-        List<String> texts = readTexts(fileName);
+    public static String getRandomText() {
+        List<String> texts = readTexts();
         if (texts.isEmpty()) {
             return ""; // 返回空字符串表示没有文本
         }
@@ -135,7 +137,7 @@ public class TextReader {
     /**
      * 获取所有文本段落（用于调试或特定用途）
      */
-    public static List<String> getAllTexts(String fileName) {
-        return readTexts(fileName);
+    public static List<String> getAllTexts() {
+        return readTexts();
     }
 }

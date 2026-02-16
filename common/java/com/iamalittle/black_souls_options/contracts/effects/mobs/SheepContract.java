@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 
 import java.util.*;
 
@@ -15,14 +16,11 @@ import java.util.*;
  */
 public class SheepContract extends ContractEffect {
     private static final String EFFECT_ID = "sheep_rainbow_color";
-    private static final String DISPLAY_NAME = "彩虹变色";
-    private static final String DESCRIPTION = "玩家模型随时间变换彩虹颜色";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.sheep.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.sheep.description";
     
     // 绵羊契约玩家集合
     private static final Set<UUID> sheepContractPlayers = new HashSet<>();
-    
-    // 彩虹颜色变换速度（毫秒）
-    private static final long COLOR_CHANGE_INTERVAL = 100L;
     
     // 彩虹循环周期（毫秒）- 控制整个彩虹循环的时间
     private static final long RAINBOW_CYCLE_DURATION = 3000L;
@@ -148,10 +146,14 @@ public class SheepContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6绵羊契约效果："));
-        details.add(Component.literal("§7- 玩家模型随时间变换彩虹颜色"));
-        details.add(Component.literal("§7- 类似被命名为'jeb_'的绵羊效果"));
-        details.add(Component.literal("§7- 实现红橙黄绿蓝靛紫渐变"));
+        details.add(Component.translatable("black_souls_options.contracts.sheep.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.sheep.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.sheep.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.sheep.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

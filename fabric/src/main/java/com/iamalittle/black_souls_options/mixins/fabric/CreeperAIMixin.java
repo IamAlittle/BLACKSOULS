@@ -1,6 +1,7 @@
 package com.iamalittle.black_souls_options.mixins.fabric;
 
 import com.iamalittle.black_souls_options.ai.goal.AvoidPlayerWithCatContractGoal;
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.monster.Creeper;
@@ -31,7 +32,7 @@ public class CreeperAIMixin {
             // 优先级为2，与躲避猫和豹猫的优先级相同
             goalSelector.addGoal(2, new AvoidPlayerWithCatContractGoal(creeper));
         } catch (Exception e) {
-            System.err.println("[BLACKSOULS] Failed to add cat contract avoidance AI to creeper: " + e.getMessage());
+            BlackSoulsConfig.error("[BLACKSOULS] Failed to add cat contract avoidance AI to creeper: " + e.getMessage());
         }
     }
 }

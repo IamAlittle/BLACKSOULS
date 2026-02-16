@@ -21,7 +21,7 @@ public class MixinBlockItem {
         if (context.getPlayer() != null && AxolotlContract.isPlayerFeigningDeath(context.getPlayer())) {
             // 取消放置方块的动作
             cir.setReturnValue(InteractionResult.PASS);
-            context.getPlayer().displayClientMessage(net.minecraft.network.chat.Component.literal("§c装死时无法放置方块！"), true);
+            context.getPlayer().displayClientMessage(net.minecraft.network.chat.Component.translatable("black_souls_options.messages.feigning_death_cannot_place_block"), true);
         }
     }
 }

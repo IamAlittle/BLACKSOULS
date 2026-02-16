@@ -5,6 +5,8 @@ import com.iamalittle.black_souls_options.contracts.ContractManager;
 import com.iamalittle.black_souls_options.contracts.ContractManagerHelper;
 import com.iamalittle.black_souls_options.contracts.GlobalContractManager;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
+import com.iamalittle.black_souls_options.network.ContractNetworkHandler;
+import com.iamalittle.black_souls_options.network.ContractSyncPacket;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
@@ -35,9 +37,13 @@ public class ContractsScreen extends Screen {
     private int maxVisibleItems;
     private int effectDetailsScrollOffset; // 效果详情区域滚动偏移量
     private String searchFilter = ""; // 搜索过滤条件
+    private long lastScrollTime = 0; // 文本滚动时间记录
+    private boolean needsRefresh = false; // 标记是否需要刷新界面
+    private long lastContractStateCheckTime = 0; // 上次检查契约状态的时间
+    private static final long CONTRACT_STATE_CHECK_INTERVAL_MS = 100; // 100毫秒检查一次契约状态
     
     public ContractsScreen() {
-        super(Component.literal("契约列表"));
+        super(Component.translatable("black_souls_options.contracts_screen.title"));
         this.contractManager = ContractManagerHelper.getAppropriateContractManager(Minecraft.getInstance().player);
         this.sortedContracts = new ArrayList<>();
         this.lastUpdateTime = System.currentTimeMillis();
@@ -45,6 +51,7 @@ public class ContractsScreen extends Screen {
         this.scrollOffset = 0;
         this.maxVisibleItems = 0; // 初始化为0，在render方法中动态计算
         this.effectDetailsScrollOffset = 0;
+        this.lastContractStateCheckTime = System.currentTimeMillis();
     }
     
     @Override
@@ -62,7 +69,7 @@ public class ContractsScreen extends Screen {
 
         this.searchBox = new EditBox(this.font, searchBoxX, searchBoxY, searchBoxWidth, searchBoxHeight, 
             Component.literal(""));
-        this.searchBox.setHint(Component.literal("搜索契约..."));
+        this.searchBox.setHint(Component.translatable("black_souls_options.contracts_screen.search_hint"));
         this.searchBox.setResponder(text -> {
             this.searchFilter = text.trim();
             updateContractList(); // 更新列表以应用过滤
@@ -76,7 +83,7 @@ public class ContractsScreen extends Screen {
         int buttonY = this.height - 30;
         
         Button closeButton = Button.builder(
-            Component.literal("关闭"),
+            Component.translatable("black_souls_options.contracts_screen.close_button"),
             button -> this.onClose()
         ).bounds(buttonX, buttonY, buttonWidth, buttonHeight).build();
         
@@ -84,7 +91,7 @@ public class ContractsScreen extends Screen {
         
         // 添加追踪按钮（初始位置设为(0,0)，在render方法中动态定位）
         this.trackButton = Button.builder(
-            Component.literal("追踪目标"),
+            Component.translatable("black_souls_options.contracts_screen.track_button"),
             button -> {
                 if (selectedContract != null) {
                     selectedContract.setTracking(!selectedContract.isTracking());
@@ -96,7 +103,7 @@ public class ContractsScreen extends Screen {
         
         // 添加删除按钮（初始位置设为(0,0)，在render方法中动态定位）
         this.deleteButton = Button.builder(
-            Component.literal("删除目标"),
+            Component.translatable("black_souls_options.contracts_screen.delete_button"),
             button -> {
                 if (selectedContract != null && contractManager != null) {
                     contractManager.removeContract(selectedContract.getEntityId());
@@ -113,7 +120,10 @@ public class ContractsScreen extends Screen {
      */
     private void updateButtonText(Button button) {
         if (selectedContract != null) {
-            button.setMessage(Component.literal(selectedContract.isTracking() ? "停止追踪" : "开始追踪"));
+            String translationKey = selectedContract.isTracking() ? 
+                "black_souls_options.contracts_screen.untrack_button" : 
+                "black_souls_options.contracts_screen.track_button";
+            button.setMessage(Component.translatable(translationKey));
         }
     }
     
@@ -121,6 +131,9 @@ public class ContractsScreen extends Screen {
     public void render(net.minecraft.client.gui.GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         // 绘制背景（半透明黑色）
         this.renderBackground(guiGraphics);
+        
+        // 检查并处理契约状态更新
+        checkAndHandleContractUpdates();
         
         // 检查是否需要更新契约位置
         long currentTime = System.currentTimeMillis();
@@ -169,26 +182,25 @@ public class ContractsScreen extends Screen {
             }
             
             // 构建位置和维度文本
-            Component positionText = Component.literal(String.format(" | 位置: %d, %d, %d | 维度: %s", 
-                blockPos.getX(), blockPos.getY(), blockPos.getZ(), 
-                selectedContract.getDimension()));
-            
-            // 构建完整的详细信息文本
-            Component detailText = Component.literal("目标: ").append(nameComponent).append(positionText);
+            Component detailText;
+            if (selectedContract.isCommandCreated()) {
+                // 如果是指令创建的契约，添加特殊标识
+                detailText = Component.translatable("black_souls_options.contracts_screen.target_info_command",
+                    nameComponent, 
+                    blockPos.getX(), blockPos.getY(), blockPos.getZ(), 
+                    selectedContract.getDimension());
+            } else {
+                // 普通契约
+                detailText = Component.translatable("black_souls_options.contracts_screen.target_info",
+                    nameComponent, 
+                    blockPos.getX(), blockPos.getY(), blockPos.getZ(), 
+                    selectedContract.getDimension());
+            }
             
             // 计算文本垂直居中的Y坐标
             int textHeight = this.font.lineHeight;
             int backgroundHeight = 16;
             int centeredY = detailY + (backgroundHeight - textHeight) / 2;
-            
-            // 绘制完整的详细信息文本
-            guiGraphics.drawString(
-                this.font,
-                detailText,
-                detailX + 5,
-                centeredY,
-                0xFFFFFF
-            );
             
             // 定位追踪按钮在详细信息区域右侧（垂直居中）
             int buttonWidth = 80;
@@ -196,6 +208,45 @@ public class ContractsScreen extends Screen {
             int buttonHeight = trackButton.getHeight();
             int trackButtonX = this.width - 20 - buttonWidth - 5;
             int trackButtonY = detailY + (16 - buttonHeight) / 2; // 按钮垂直居中
+            
+            // 计算文本的最大可用宽度（避免与追踪按钮重叠）
+            int maxTextWidth = trackButtonX - detailX - 10; // 留出5像素的边距
+            
+            // 检查文本是否过长，如果过长则启用滚动显示
+            String detailString = detailText.getString();
+            int textWidth = this.font.width(detailString);
+            
+            if (textWidth > maxTextWidth) {
+                // 文本过长，启用滚动显示
+                if (lastScrollTime == 0) {
+                    lastScrollTime = currentTime;
+                }
+                
+                // 计算滚动偏移量（平滑滚动）
+                long scrollDuration = 5000; // 5秒完成一个完整滚动周期
+                int totalScrollDistance = textWidth + maxTextWidth; // 滚动总距离
+                int scrollOffset = (int)((currentTime - lastScrollTime) % scrollDuration * totalScrollDistance / scrollDuration);
+                
+                // 绘制滚动文本
+                guiGraphics.enableScissor(detailX + 5, detailY, trackButtonX - 5, detailY + backgroundHeight);
+                guiGraphics.drawString(
+                    this.font,
+                    detailText,
+                    detailX + 5 - scrollOffset,
+                    centeredY,
+                    0xFFFFFF
+                );
+                guiGraphics.disableScissor();
+            } else {
+                // 文本不长，正常显示
+                guiGraphics.drawString(
+                    this.font,
+                    detailText,
+                    detailX + 5,
+                    centeredY,
+                    0xFFFFFF
+                );
+            }
             
             // 更新追踪按钮位置和状态
             if (this.trackButton != null) {
@@ -218,7 +269,7 @@ public class ContractsScreen extends Screen {
             
             guiGraphics.drawString(
                 this.font,
-                "请选择一个契约查看详细信息",
+                Component.translatable("black_souls_options.contracts_screen.select_prompt").getString(),
                 detailX + 5,
                 centeredY,
                 0xAAAAAA
@@ -318,8 +369,21 @@ public class ContractsScreen extends Screen {
                     // 如果不是JSON格式，使用普通文本处理
                     nameComponent = Component.literal(contract.getEntityName()).withStyle(style -> style.withBold(true));
                 }
-                // 使用drawString的Component重载版本，指定颜色为白色，但当文本包含颜色代码时会被覆盖
+                
+                // 绘制实体名称
                 guiGraphics.drawString(font, nameComponent, listX + 10, currentY + 3, 0xFFFFFF);
+                
+                // 如果是指令创建的契约，在名称旁边添加特殊标识
+                if (contract.isCommandCreated()) {
+                    Component commandCreatedText = Component.translatable("black_souls_options.contracts_screen.command_created_text");
+                    guiGraphics.drawString(
+                        font,
+                        commandCreatedText,
+                        listX + 10 + font.width(nameComponent) + 5, // 名称右侧5像素
+                        currentY + 3,
+                        0xFFAA00 // 橙色标识
+                    );
+                }
                 
                 // 绘制实体位置（在名称下方）
                 String positionText = String.format("%d, %d, %d", pos.getX(), pos.getY(), pos.getZ());
@@ -345,6 +409,8 @@ public class ContractsScreen extends Screen {
                 
                 // 获取契约效果状态
                 boolean isEffectActive = !contract.getEffects().isEmpty() && contract.getEffects().get(0).isActive();
+                
+                // 修复逻辑：激活状态显示红色"关闭"，未激活状态显示绿色"开启"
                 int toggleBtnColor = isEffectActive ? 
                     (isToggleBtnHovered ? 0xCCAA0000 : 0xCC550000) :   // 激活状态：红色
                     (isToggleBtnHovered ? 0xCC00AA00 : 0xCC005500);     // 未激活状态：绿色
@@ -354,7 +420,9 @@ public class ContractsScreen extends Screen {
                                toggleBtnColor);
                 
                 // 绘制开关按钮文字
-                String toggleText = isEffectActive ? "关闭" : "开启";
+                Component toggleText = isEffectActive ? 
+                    Component.translatable("black_souls_options.contracts_screen.toggle_button_off") : 
+                    Component.translatable("black_souls_options.contracts_screen.toggle_button_on");
                 guiGraphics.drawString(
                     font,
                     toggleText,
@@ -378,10 +446,11 @@ public class ContractsScreen extends Screen {
                                isDeleteBtnHovered ? 0xCCAA0000 : 0xCC550000);
                 
                 // 绘制删除按钮文字
+                Component deleteText = Component.translatable("black_souls_options.contracts_screen.delete_button_text");
                 guiGraphics.drawString(
                     font,
-                    "删除",
-                    deleteBtnX + (deleteBtnWidth - font.width("删除")) / 2,
+                    deleteText,
+                    deleteBtnX + (deleteBtnWidth - font.width(deleteText)) / 2,
                     deleteBtnY + (deleteBtnHeight - font.lineHeight) / 2,
                     0xFFFFFF
                 );
@@ -450,6 +519,10 @@ public class ContractsScreen extends Screen {
                             // 关键修复：向服务器发送状态同步请求
                             com.iamalittle.black_souls_options.network.ContractNetworkHandler.sendEffectToggleRequest(contract.getEntityId(), true);
                         }
+                        
+                        // 关键修复：立即更新界面显示，确保按钮状态实时变化
+                        // 强制重新渲染界面，让按钮颜色立即更新
+                        this.updateContractList();
                     }
                     return true;
                 }
@@ -465,10 +538,13 @@ public class ContractsScreen extends Screen {
                     // 点击了删除按钮
                     Contract contract = sortedContracts.get(clickedIndex);
                     
-                    // 在客户端删除契约
+                    // 在客户端静默停用效果（不发送停用消息，避免重复）
+                    contract.deactivateEffectsSilently(Minecraft.getInstance().player);
+                    
+                    // 在客户端删除契约（静默删除，不发送消息）
                     contractManager.removeContract(contract.getEntityId());
                     
-                    // 向服务器发送删除请求
+                    // 向服务器发送删除请求（服务器端会发送停用消息）
                     com.iamalittle.black_souls_options.network.ContractNetworkHandler.sendContractDeleteRequest(contract.getEntityId());
                     
                     // 如果删除的是当前选中的契约，清除选中状态
@@ -543,6 +619,9 @@ public class ContractsScreen extends Screen {
      */
     private void updateContractList() {
         if (contractManager != null) {
+            // 保存当前选中的契约（如果有）
+            Contract previouslySelected = selectedContract;
+            
             sortedContracts.clear();
             
             // 获取所有契约
@@ -594,6 +673,16 @@ public class ContractsScreen extends Screen {
             
             // 按创建时间排序
             sortedContracts.sort((c1, c2) -> Long.compare(c2.getCreationTime(), c1.getCreationTime()));
+            
+            // 恢复选中的契约（如果仍然存在）
+            if (previouslySelected != null) {
+                for (Contract contract : sortedContracts) {
+                    if (contract.getEntityId().equals(previouslySelected.getEntityId())) {
+                        selectedContract = contract;
+                        break;
+                    }
+                }
+            }
             
             // 确保滚动位置有效
             scrollOffset = Math.min(scrollOffset, Math.max(0, sortedContracts.size() - maxVisibleItems));
@@ -662,11 +751,11 @@ public class ContractsScreen extends Screen {
         int currentY = detailY + 5 - effectDetailsScrollOffset; // 应用滚动偏移，包括标题
         
         // 绘制效果详情标题
-        String effectTitle = "契约效果详情";
+        Component effectTitle = Component.translatable("black_souls_options.contracts_screen.effect_details_title");
         if (currentY + font.lineHeight >= detailY+10 && currentY < detailY + effectDetailsHeight - 10) {
             guiGraphics.drawString(
                 font,
-                effectTitle,
+                effectTitle.getString(),
                 detailX + 10,
                 currentY,
                 0x55FF55
@@ -691,11 +780,19 @@ public class ContractsScreen extends Screen {
             // 显示效果列表
             for (ContractEffect effect : effects) {
                 // 效果名称和状态
-                String effectInfo = effect.getDisplayName() + " - " + (effect.isActive() ? "§a激活" : "§c未激活");
+                Component statusText = effect.isActive() ? 
+                    Component.translatable("black_souls_options.contracts_screen.effect_active").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#55FF55"))) : 
+                    Component.translatable("black_souls_options.contracts_screen.effect_inactive").withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#FF5555")));
+                
+                Component effectInfo = Component.translatable("black_souls_options.contracts_screen.effect_info", 
+                    effect.getDisplayName(), 
+                    statusText
+                ).withStyle(style -> style.withColor(net.minecraft.network.chat.TextColor.parseColor("#FFFFFF")));
+                
                 if (currentY + font.lineHeight >= detailY+10 && currentY < detailY + effectDetailsHeight - 10) {
                     guiGraphics.drawString(
                         font,
-                        Component.literal(effectInfo).getString(),
+                        effectInfo,
                         detailX + 10,
                         currentY,
                         0xFFFFFF
@@ -725,7 +822,7 @@ public class ContractsScreen extends Screen {
                     if (currentY + font.lineHeight >= detailY+10 && currentY < detailY + effectDetailsHeight - 10) {
                         guiGraphics.drawString(
                             font,
-                            detail.getString(),
+                            detail,
                             detailX + 20, // 缩进显示详细信息
                             currentY,
                             0xDDDDDD
@@ -775,5 +872,63 @@ public class ContractsScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false; // 不暂停游戏
+    }
+    
+    // 删除复杂的网络监听器注册代码，使用简单的状态检查机制
+    
+    /**
+     * 检查并处理契约状态更新
+     */
+    private void checkAndHandleContractUpdates() {
+        long currentTime = System.currentTimeMillis();
+        
+        // 定期检查契约状态是否发生变化
+        if (currentTime - lastContractStateCheckTime > CONTRACT_STATE_CHECK_INTERVAL_MS) {
+            checkContractStateChanges();
+            lastContractStateCheckTime = currentTime;
+        }
+        
+        if (needsRefresh) {
+            // 强制刷新契约列表
+            updateContractList();
+            needsRefresh = false;
+        }
+    }
+    
+    /**
+     * 检查契约状态是否发生变化
+     */
+    private void checkContractStateChanges() {
+        if (contractManager == null || sortedContracts.isEmpty()) {
+            return;
+        }
+        
+        // 检查每个契约的状态是否与界面显示的状态一致
+        for (Contract contract : sortedContracts) {
+            Contract currentContract = contractManager.getContract(contract.getEntityId());
+            if (currentContract != null) {
+                // 检查效果数量是否一致
+                if (currentContract.getEffects().size() != contract.getEffects().size()) {
+                    needsRefresh = true;
+                    break;
+                }
+                
+                // 检查每个效果的状态是否发生变化
+                for (int i = 0; i < currentContract.getEffects().size(); i++) {
+                    ContractEffect currentEffect = currentContract.getEffects().get(i);
+                    ContractEffect displayedEffect = contract.getEffects().get(i);
+                    
+                    if (currentEffect.isActive() != displayedEffect.isActive()) {
+                        // 状态发生变化，标记需要刷新
+                        needsRefresh = true;
+                        break;
+                    }
+                }
+                
+                if (needsRefresh) {
+                    break; // 发现一个变化就足够触发刷新
+                }
+            }
+        }
     }
 }

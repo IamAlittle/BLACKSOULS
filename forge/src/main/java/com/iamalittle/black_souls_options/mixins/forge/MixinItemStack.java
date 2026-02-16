@@ -30,7 +30,7 @@ public class MixinItemStack {
         if (AxolotlContract.isPlayerFeigningDeath(player)) {
             // 只在服务器端显示消息，避免重复显示
             if (!level.isClientSide) {
-                player.displayClientMessage(Component.literal("§c装死时不能使用物品！"), true);
+                player.displayClientMessage(Component.translatable("black_souls_options.messages.feigning_death_cannot_use_item"), true);
             }
             // 取消物品使用并返回原始物品栈，确保客户端-服务器同步
             ItemStack originalStack = player.getItemInHand(interactionHand);
@@ -49,7 +49,7 @@ public class MixinItemStack {
         if (player != null && AxolotlContract.isPlayerFeigningDeath(player)) {
             // 只在服务器端显示消息，避免重复显示
             if (!level.isClientSide) {
-                player.displayClientMessage(Component.literal("§c装死时不能使用物品！"), true);
+                player.displayClientMessage(Component.translatable("black_souls_options.messages.feigning_death_cannot_use_item"), true);
             }
             // 取消物品使用并显示消息
             cir.setReturnValue(InteractionResult.FAIL);

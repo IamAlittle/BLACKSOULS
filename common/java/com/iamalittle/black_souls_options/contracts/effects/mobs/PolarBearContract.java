@@ -7,6 +7,7 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 
 /**
@@ -17,8 +18,8 @@ import java.util.*;
  */
 public class PolarBearContract extends ContractEffect {
     private static final String EFFECT_ID = "polar_bear_freeze_immunity";
-    private static final String DISPLAY_NAME = "暖和啊";
-    private static final String DESCRIPTION = "不会受到细雪的冻伤伤害";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.polar_bear.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.polar_bear.description";
 
     // 北极熊契约玩家集合
     private static final Set<UUID> polarBearContractPlayers = new HashSet<>();
@@ -127,9 +128,12 @@ public class PolarBearContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6北极熊契约效果："));
-        details.add(Component.literal("§7- 完全免疫细雪的冻伤伤害"));
-        details.add(Component.literal("§7- 在细雪中不会受到任何伤害"));
+        details.add(Component.translatable("black_souls_options.contracts.polar_bear.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.polar_bear.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.polar_bear.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

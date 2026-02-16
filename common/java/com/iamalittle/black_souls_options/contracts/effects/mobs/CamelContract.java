@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.ItemStack;
@@ -22,8 +23,8 @@ import java.util.UUID;
  */
 public class CamelContract extends ContractEffect {
     private static final String EFFECT_ID = "camel_cactus_eat";
-    private static final String DISPLAY_NAME = "仙人掌食用";
-    private static final String DESCRIPTION = "仙人掌可食用并恢复生命值和饥饿值";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.camel.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.camel.description";
     
     // 恢复生命值
     private static final float HEAL_AMOUNT = 2.0f;
@@ -109,11 +110,11 @@ public class CamelContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6骆驼契约效果："));
-        details.add(Component.literal("§7仙人掌食用"));
-        details.add(Component.literal("§7- 仙人掌右键触发食用"));
-        details.add(Component.literal("§a- 食用后恢复" + HEAL_AMOUNT + "点生命值"));
-        details.add(Component.literal("§a- 食用后恢复" + FOOD_AMOUNT + "点饥饿值"));
+        details.add(Component.translatable("black_souls_options.contracts.camel.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.camel.cactus_eat").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.camel.right_click_trigger").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.camel.heal_amount", HEAL_AMOUNT).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.camel.food_amount", FOOD_AMOUNT).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
     

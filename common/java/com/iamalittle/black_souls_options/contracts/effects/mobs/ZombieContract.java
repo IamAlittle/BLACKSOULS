@@ -3,6 +3,7 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -22,8 +23,8 @@ import java.util.*;
  */
 public class ZombieContract extends ContractEffect {
     private static final String EFFECT_ID = "zombie_infect_villager";
-    private static final String DISPLAY_NAME = "感染";
-    private static final String DESCRIPTION = "攻击村民时将其转化为僵尸村民";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.zombie.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.zombie.description";
     
     // 转化概率（百分比）
     private static final float CONVERSION_CHANCE = 0.3f; // 30%概率转化
@@ -196,11 +197,16 @@ public class ZombieContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6僵尸契约效果："));
-        details.add(Component.literal("§7感染村民"));
-        details.add(Component.literal("§7- 攻击村民时有" + (int)(CONVERSION_CHANCE * 100) + "%概率将其转化为僵尸村民"));
-        details.add(Component.literal("§c- 白天在太阳底下会着火，持续8秒"));
-        details.add(Component.literal("§c- 戴头盔可以避免太阳着火效果，但会消耗头盔耐久度"));
+        details.add(Component.translatable("black_souls_options.contracts.zombie.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.zombie.effect_subtitle")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.zombie.effect1", (int)(CONVERSION_CHANCE * 100))
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.zombie.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
+        details.add(Component.translatable("black_souls_options.contracts.zombie.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#FF5555"))));
         return details;
     }
 }

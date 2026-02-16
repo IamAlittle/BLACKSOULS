@@ -4,6 +4,7 @@ import com.iamalittle.black_souls_options.contracts.ContractDetector;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -16,8 +17,8 @@ import java.util.List;
  */
 public class VillagerContract extends ContractEffect {
     private static final String EFFECT_ID = "villager_hero_of_the_village";
-    private static final String DISPLAY_NAME = "村庄英雄";
-    private static final String DESCRIPTION = "获得村庄英雄效果，与村民交易获得折扣";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.villager.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.villager.description";
     
     // 检查间隔（tick数，20 tick = 1秒）
     private static final int CHECK_INTERVAL = 200; // 每10秒检查一次
@@ -128,19 +129,14 @@ public class VillagerContract extends ContractEffect {
             applyHeroOfTheVillageEffect(player);
         }
     }
-    
-    /**
-     * 检查玩家是否拥有村民契约效果
-     */
-    public static boolean hasVillagerContract(Player player) {
-        return player != null && ContractDetector.hasContract(player, "minecraft:villager");
-    }
 
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6村民契约效果："));
-        details.add(Component.literal("§a- 获得村庄英雄效果"));
+        details.add(Component.translatable("black_souls_options.contracts.villager.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.villager.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 

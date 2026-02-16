@@ -7,6 +7,7 @@ import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import java.util.*;
 
 /**
@@ -17,8 +18,8 @@ import java.util.*;
  */
 public class EnderManContract extends ContractEffect {
     private static final String EFFECT_ID = "enderman_projectile_immunity";
-    private static final String DISPLAY_NAME = "末影之躯";
-    private static final String DESCRIPTION = "免疫弹射物，但接触水会掉血";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.ender_man.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.ender_man.description";
     
     // 水伤害间隔（毫秒）
     private static final long WATER_DAMAGE_INTERVAL = 1000; // 1秒
@@ -119,25 +120,7 @@ public class EnderManContract extends ContractEffect {
         // 检查玩家是否在露天（头顶没有遮挡）
         return player.level().canSeeSky(player.blockPosition());
     }
-    
-    /**
-     * 检查玩家是否应该免疫伤害（模仿末影人的弹射物免疫）
-     * 这个方法需要在伤害事件处理器中调用
-     */
-    public static boolean shouldImmuneDamage(Player player, DamageSource damageSource) {
-        if (player == null || damageSource == null) {
-            return false;
-        }
-        
-        // 检查玩家是否拥有末影人契约效果
-        if (!hasEnderManContract(player)) {
-            return false;
-        }
-        
-        // 检查伤害来源是否为弹射物（模仿末影人的弹射物免疫）
-        return damageSource.is(DamageTypeTags.IS_PROJECTILE);
-    }
-    
+
     /**
      * 处理玩家受到伤害事件，检查是否需要免疫弹射物伤害
      * 这个方法需要在伤害事件处理器中调用
@@ -170,11 +153,11 @@ public class EnderManContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§5末影人契约效果："));
-        details.add(Component.literal("§7- 免疫所有弹射物伤害"));
-        details.add(Component.literal("§7- 接触水时会受到伤害（每1秒造成半颗心伤害）"));
-        details.add(Component.literal("§7- 在露天下雨天接触水不掉血"));
-        details.add(Component.literal("§7- 模仿末影人的特性：怕水但免疫弹射物"));
+        details.add(Component.translatable("black_souls_options.contracts.ender_man.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.ender_man.effect1").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.ender_man.effect2", WATER_DAMAGE_INTERVAL / 1000, WATER_DAMAGE_AMOUNT * 2).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.ender_man.effect3").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.ender_man.effect4").withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

@@ -6,6 +6,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,11 +22,9 @@ import java.util.*;
  */
 public class GlowSquidContract extends ContractEffect {
     private static final String EFFECT_ID = "glow_squid_glowing";
-    private static final String DISPLAY_NAME = "我是发光鱿鱼";
-    private static final String DESCRIPTION = "获得发光效果并照亮周围";
-    
-    // 发光鱿鱼契约玩家集合
-    private static final Set<UUID> glowSquidContractPlayers = new HashSet<>();
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.glow_squid.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.glow_squid.description";
+
     
     // 光源检测范围（格）
     private static final int LIGHT_RANGE = 2;
@@ -43,7 +42,7 @@ public class GlowSquidContract extends ContractEffect {
     @Override
     protected void onActivate(Player player, boolean sendMessage) {
         if (player != null) {
-            glowSquidContractPlayers.add(player.getUUID());
+
             
             // 记录玩家当前位置
             playerLastPositions.put(player.getUUID(), player.blockPosition());
@@ -73,8 +72,6 @@ public class GlowSquidContract extends ContractEffect {
         if (player != null) {
             // 清理玩家周围的旧光源方块
             cleanupLightBlocks(player);
-
-            glowSquidContractPlayers.remove(player.getUUID());
 
             // 移除发光效果
             removeGlowingEffect(player);
@@ -292,13 +289,6 @@ public class GlowSquidContract extends ContractEffect {
     }
     
     /**
-     * 检查玩家是否拥有发光鱿鱼契约效果
-     */
-    public static boolean hasGlowSquidContract(Player player) {
-        return player != null && glowSquidContractPlayers.contains(player.getUUID());
-    }
-    
-    /**
      * 清理玩家发光鱿鱼契约的光源方块（静态方法）
      * 供事件处理器调用，防止玩家离开服务器时遗留光源方块
      */
@@ -322,7 +312,6 @@ public class GlowSquidContract extends ContractEffect {
             // 从映射中移除玩家记录
             playerLightPositions.remove(playerId);
             playerLastPositions.remove(playerId);
-            glowSquidContractPlayers.remove(playerId);
         }
     }
 
@@ -334,9 +323,12 @@ public class GlowSquidContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6发光鱿鱼契约效果："));
-        details.add(Component.literal("§7- 持续获得发光效果"));
-        details.add(Component.literal("§7- 玩家周围产生光源，照亮附近区域"));
+        details.add(Component.translatable("black_souls_options.contracts.glow_squid.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.glow_squid.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.glow_squid.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }

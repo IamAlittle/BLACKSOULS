@@ -3,6 +3,10 @@ package com.iamalittle.black_souls_options.contracts.effects.mobs;
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
+import net.minecraft.util.FastColor;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.FormattedCharSink;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -27,8 +31,8 @@ import java.util.UUID;
  */
 public class SnifferContract extends ContractEffect {
     private static final String EFFECT_ID = "sniffer_find_treasure";
-    private static final String DISPLAY_NAME = "寻宝";
-    private static final String DESCRIPTION = "挖掘泥土类方块时有几率获得额外战利品";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.sniffer.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.sniffer.description";
     
     // 存储拥有嗅探兽契约的玩家UUID
     private static final List<UUID> snifferContractPlayers = new ArrayList<>();
@@ -150,8 +154,8 @@ public class SnifferContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§b嗅探兽寻宝效果："));
-        details.add(Component.literal("§a挖掘泥土类方块时有" + TREASURE_CHANCE + "%几率获得额外宝贝"));
+        details.add(Component.translatable("black_souls_options.contracts.sniffer.effect_title").withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.sniffer.effect1", TREASURE_CHANCE).withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 

@@ -1,6 +1,7 @@
 package com.iamalittle.black_souls_options.contracts.effects.mobs;
 
 import com.iamalittle.black_souls_options.contracts.effects.ContractEffect;
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -9,6 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.TextColor;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,8 +23,8 @@ import java.util.stream.Collectors;
  */
 public class ParrotContract extends ContractEffect {
     private static final String EFFECT_ID = "parrot_random_sound";
-    private static final String DISPLAY_NAME = "鹦鹉学舌";
-    private static final String DESCRIPTION = "可以随机模仿各种音效";
+    private static final String DISPLAY_NAME = "black_souls_options.contracts.parrot.display_name";
+    private static final String DESCRIPTION = "black_souls_options.contracts.parrot.description";
     
     // 鹦鹉契约玩家集合
     private static final Set<UUID> parrotContractPlayers = new HashSet<>();
@@ -98,7 +100,7 @@ public class ParrotContract extends ContractEffect {
             
             return sounds;
         } catch (Exception e) {
-            System.err.println("获取音效注册表时出错：" + e.getMessage());
+            BlackSoulsConfig.error("获取音效注册表时出错：" + e.getMessage());
             return Collections.emptyList();
         }
     }
@@ -179,10 +181,14 @@ public class ParrotContract extends ContractEffect {
     @Override
     public List<Component> getEffectDetails() {
         List<Component> details = new ArrayList<>();
-        details.add(Component.literal("§6鹦鹉契约效果："));
-        details.add(Component.literal("§7- 按下R键随机模仿各种音效"));
-        details.add(Component.literal("§7- 可以模仿原版和模组的音效"));
-        details.add(Component.literal("§7- 娱乐性功能"));
+        details.add(Component.translatable("black_souls_options.contracts.parrot.effect_title")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FFFF"))));
+        details.add(Component.translatable("black_souls_options.contracts.parrot.effect1")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.parrot.effect2")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
+        details.add(Component.translatable("black_souls_options.contracts.parrot.effect3")
+                .withStyle(style -> style.withColor(TextColor.parseColor("#55FF55"))));
         return details;
     }
 }
