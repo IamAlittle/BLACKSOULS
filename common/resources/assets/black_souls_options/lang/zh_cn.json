@@ -15,6 +15,7 @@
   "black_souls_options.contracts_screen.toggle_button_on": "开启",
   "black_souls_options.contracts_screen.toggle_button_off": "关闭",
   "black_souls_options.contracts_screen.delete_button_text": "删除",
+  "black_souls_options.contracts_screen.no_contracts": "暂无契约",
   
   "black_souls_options.commands.error.contract_manager_not_found": "错误：无法获取玩家的契约管理器",
   "black_souls_options.commands.error.entity_type_not_registered": "错误：实体类型 '%s' 未注册或没有契约效果",

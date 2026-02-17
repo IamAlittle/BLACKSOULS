@@ -143,11 +143,13 @@ public class ContractsScreen extends Screen {
         }
         
         // 绘制契约列表标题（合并为一个标题，删除红色主标题）
-        String titleText;
+        Component titleText;
         if (contractManager != null) {
-            titleText = "契约列表 (" + sortedContracts.size() + "/" + contractManager.getContractCount() + ")";
+            titleText = Component.translatable("black_souls_options.contracts_screen.title")
+                .append(" (" + sortedContracts.size() + "/" + contractManager.getContractCount() + ")");
         } else {
-            titleText = "契约列表 (" + sortedContracts.size() + "/0)";
+            titleText = Component.translatable("black_souls_options.contracts_screen.title")
+                .append(" (" + sortedContracts.size() + "/0)");
         }
         guiGraphics.drawString(
             this.font,
@@ -313,7 +315,7 @@ public class ContractsScreen extends Screen {
         
         if (sortedContracts.isEmpty()) {
             // 显示没有契约的提示
-            String noContractsText = "暂无契约";
+            String noContractsText = Component.translatable("black_souls_options.contracts_screen.no_contracts").getString();
             guiGraphics.drawString(
                 this.font,
                 noContractsText,
