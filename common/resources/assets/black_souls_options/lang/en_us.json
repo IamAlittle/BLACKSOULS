@@ -15,6 +15,7 @@
   "black_souls_options.contracts_screen.toggle_button_on": "On",
   "black_souls_options.contracts_screen.toggle_button_off": "Off",
   "black_souls_options.contracts_screen.delete_button_text": "Delete",
+  "black_souls_options.contracts_screen.no_contracts": "No Contracts",
 
   "black_souls_options.commands.error.contract_manager_not_found": "Error: Failed to get player's contract manager",
   "black_souls_options.commands.error.entity_type_not_registered": "Error: Entity type '%s' is not registered or has no contract effects",
