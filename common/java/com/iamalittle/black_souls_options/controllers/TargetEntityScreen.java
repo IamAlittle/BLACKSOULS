@@ -30,6 +30,7 @@ import com.iamalittle.black_souls_options.contracts.ContractManager;
 import com.iamalittle.black_souls_options.contracts.ContractManagerHelper;
 import com.iamalittle.black_souls_options.contracts.Contract;
 import com.iamalittle.black_souls_options.sound.ModSounds;
+import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import java.util.UUID;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -119,14 +120,19 @@ public class TargetEntityScreen extends Screen {
             0xFFFFA0  // 已确认时金色
         );
         
+        // 根据无和谐模式配置选择不同的选项文本
+        boolean isUncensored = BlackSoulsConfig.getInstance().isEnableUncensoredMode();
+        String killKey = isUncensored ? "black_souls_options.target_entity.kill" : "black_souls_options.target_entity.attack";
+        String violateKey = isUncensored ? "black_souls_options.target_entity.violate" : "black_souls_options.target_entity.offend";
+        
         optionManager.addOption(
-            Component.translatable("black_souls_options.target_entity.kill"),
+            Component.translatable(killKey),
             0xFF784C, // 默认FF784C颜色
             0xFFFFA0  // 已确认时金色
         );
         
         optionManager.addOption(
-            Component.translatable("black_souls_options.target_entity.violate"),
+            Component.translatable(violateKey),
             0xFF784C, // 默认FF784C颜色
             0xFFFFA0  // 已确认时金色
         );

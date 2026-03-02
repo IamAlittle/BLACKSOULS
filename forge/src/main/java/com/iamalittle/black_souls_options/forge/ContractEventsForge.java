@@ -12,6 +12,7 @@ import com.iamalittle.black_souls_options.contracts.effects.mobs.GuardianThornsC
 import com.iamalittle.black_souls_options.contracts.effects.AttackEventHandler;
 import com.iamalittle.black_souls_options.contracts.effects.BlockBreakEventHandler;
 import net.minecraft.client.Minecraft;
+
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -26,6 +27,11 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.TextColor;
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 
 /**
@@ -42,6 +48,20 @@ public class ContractEventsForge {
         registerContractCommands(event.getServer());
         
         BlackSoulsConfig.debug("Contract system initialized for server");
+    }
+    
+    /**
+     * 客户端玩家加入游戏事件
+     */
+    @Mod.EventBusSubscriber(modid = "black_souls_options", bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+    public static class ClientJoinHandler {
+        @SubscribeEvent
+        public static void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
+            // 检查玩家是否存在
+            if (event.getPlayer() == null) {
+                return;
+            }
+        }
     }
     
     @SubscribeEvent
@@ -201,6 +221,7 @@ public class ContractEventsForge {
             Class<?> commandClass = Class.forName("com.iamalittle.black_souls_options.commands.BSContractCommand");
             java.lang.reflect.Method registerMethod = commandClass.getMethod("register", MinecraftServer.class);
             registerMethod.invoke(null, server);
+            
             BlackSoulsConfig.debug("Contract commands registered successfully");
         } catch (Exception e) {
             BlackSoulsConfig.error("Failed to register contract commands: " + e.getMessage());

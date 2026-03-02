@@ -55,3 +55,10 @@ BlackSouls 2 的同人mod，主要还原选项功能和为每个生物添加契�
     versionRange="[1.20.1,1.21)"
     ordering="NONE"
     side="CLIENT"
+# Cloth Config dependency
+[[dependencies.black_souls_options]]
+modId="cloth_config"
+mandatory=true
+versionRange="[11.1.106,)"
+ordering="NONE"
+side="CLIENT"

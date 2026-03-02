@@ -2,6 +2,8 @@ package com.iamalittle.black_souls_options;
 
 import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
 import com.iamalittle.black_souls_options.controllers.TargetEntityScreen;
+import com.iamalittle.black_souls_options.controllers.FirstTimeWelcomeScreen;
+import com.iamalittle.black_souls_options.controllers.WelcomeScreenManager;
 import com.iamalittle.black_souls_options.contracts.ContractSystem;
 import com.iamalittle.black_souls_options.input.SpitAbilityKeyManager;
 import com.iamalittle.black_souls_options.render.ContractTrackerRenderer;
@@ -18,6 +20,7 @@ import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import org.apache.logging.log4j.LogManager;
@@ -42,7 +45,20 @@ public class ModMain {
 		public static void onClientSetup(FMLClientSetupEvent event) {
 			ContractTrackerRenderer.setup();
 			
-			// 初始化TOML配置文件
+			// 初始化Cloth Config
+			com.iamalittle.black_souls_options.config.BlackSoulsClothConfig.init();
+			
+			// 为Forge模组列表添加配置按钮
+			event.enqueueWork(() -> {
+				ModLoadingContext.get().registerExtensionPoint(
+					net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,
+					() -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory(
+						(client, parent) -> com.iamalittle.black_souls_options.config.ConfigScreenBuilder.createConfigScreen(parent)
+					)
+				);
+			});
+			
+			// 初始化配置（保持向后兼容）
 			BlackSoulsConfig.getInstance();
 			
 			// 初始化契约系统，启动定时更新器
@@ -85,6 +101,21 @@ public class ModMain {
 					SpitAbilityKeyManager.updateKeyState();
 				}
 			}
+		}
+		
+		// 客户端玩家加入游戏事件 - 显示欢迎界面
+		@SubscribeEvent
+		public static void onClientPlayerLoggedIn(net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingIn event) {
+			// 延迟一小段时间以确保游戏完全加载
+			Minecraft.getInstance().execute(() -> {
+				Minecraft minecraft = Minecraft.getInstance();
+				if (minecraft.player != null && minecraft.level != null) {
+					// 检查是否需要显示欢迎界面
+					if (WelcomeScreenManager.getInstance().shouldShowWelcomeScreen()) {
+						minecraft.setScreen(new FirstTimeWelcomeScreen());
+					}
+				}
+			});
 		}
 	}
 }

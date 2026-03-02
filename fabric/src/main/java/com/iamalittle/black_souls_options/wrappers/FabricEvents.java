@@ -4,13 +4,21 @@ import com.iamalittle.black_souls_options.common.Events;
 import com.iamalittle.black_souls_options.common.events.RenderWorldLastEvent;
 import com.iamalittle.black_souls_options.contracts.effects.mobs.AxolotlContract;
 import com.iamalittle.black_souls_options.controllers.TargetEntityScreen;
+import com.iamalittle.black_souls_options.controllers.FirstTimeWelcomeScreen;
+import com.iamalittle.black_souls_options.controllers.WelcomeScreenManager;
 import com.iamalittle.black_souls_options.events.FabricPlayerDeathEventHandler;
 import com.iamalittle.black_souls_options.fabric.ContractEventsFabric;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextColor;
 import com.iamalittle.black_souls_options.client.TitleScreenCharacterRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.*;
@@ -29,8 +37,6 @@ public class FabricEvents {
     // 存储实体位置跟踪信息
     private static final Map<UUID, Vec3> entityPositions = new HashMap<>();
 
-    // 用于跟踪是否在暂停屏幕中
-    private static boolean inPauseScreen = false;
 
     public static void setup() {
         // 注册屏幕初始化后事件，用于阻止玩家倒地时打开GUI界面
@@ -47,7 +53,8 @@ public class FabricEvents {
                         client.setScreen(null);
                     }
                 }
-        }});
+            }
+        });
 
         WorldRenderEvents.LAST.register(context -> {
             Events.RenderWorldLast.trigger(new RenderWorldLastEvent(context.matrixStack(), context.tickDelta(), context.projectionMatrix()));
@@ -94,6 +101,19 @@ public class FabricEvents {
                     }
                 }
             }
+        });
+        
+        // 客户端玩家加入游戏事件 - 显示欢迎界面
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            // 延迟一小段时间以确保游戏完全加载
+            client.execute(() -> {
+                if (client.player != null && client.level != null) {
+                    // 检查是否需要显示欢迎界面
+                    if (WelcomeScreenManager.getInstance().shouldShowWelcomeScreen()) {
+                        client.setScreen(new FirstTimeWelcomeScreen());
+                    }
+                }
+            });
         });
         
         // 初始化契约事件处理器

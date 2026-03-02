@@ -22,6 +22,7 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.MinecraftServer;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
@@ -196,6 +197,7 @@ public class ContractEventsFabric {
             Class<?> commandClass = Class.forName("com.iamalittle.black_souls_options.commands.BSContractCommand");
             java.lang.reflect.Method registerMethod = commandClass.getMethod("register", MinecraftServer.class);
             registerMethod.invoke(null, server);
+            
             BlackSoulsConfig.debug("Contract commands registered successfully");
         } catch (Exception e) {
             BlackSoulsConfig.error("Failed to register contract commands: " + e.getMessage());

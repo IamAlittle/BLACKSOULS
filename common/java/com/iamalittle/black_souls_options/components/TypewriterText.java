@@ -70,6 +70,18 @@ public class TypewriterText {
     }
     
     /**
+     * 设置当前显示的文本索引（用于控制文本显示进度）
+     */
+    public void setCurrentIndex(int index) {
+        if (index >= 0 && index <= fullText.length()) {
+            this.currentIndex = index;
+            this.currentText = fullText.substring(0, index);
+            this.isComplete = (index == fullText.length());
+            this.isPlaying = !this.isComplete;
+        }
+    }
+    
+    /**
      * 设置字体大小缩放比例
      * @param fontSizeScale 字体大小缩放比例（1.0为原始大小，0.5为一半大小，2.0为两倍大小）
      */

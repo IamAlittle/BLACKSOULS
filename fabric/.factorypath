@@ -7,6 +7,6 @@
     <factorypathentry kind="EXTJAR" id="C:\Users\Alittle\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm-analysis\9.6\9ce6c7b174bd997fc2552dff47964546bd7a5ec3\asm-analysis-9.6.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="EXTJAR" id="C:\Users\Alittle\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm-util\9.6\f77caf84eb93786a749b2baa40865b9613e3eaee\asm-util-9.6.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="EXTJAR" id="C:\Users\Alittle\.gradle\caches\modules-2\files-2.1\org.ow2.asm\asm-commons\9.6\f1a9e5508eff490744144565c47326c8648be309\asm-commons-9.6.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="EXTJAR" id="C:\Users\Alittle\.gradle\caches\fabric-loom\1.20.1\loom.mappings.1_20_1.layered+hash.2198-v2\mappings.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="C:\Users\Alittle\.gradle\caches\fabric-loom\1.20.2\loom.mappings.1_20_2.layered+hash.2198-v2\mappings.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="EXTJAR" id="C:\Users\Alittle\.gradle\caches\modules-2\files-2.1\net.fabricmc\mapping-io\0.2.1\2a1aeedce104191bbb9e39e26abfbfeaf9b0590b\mapping-io-0.2.1.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

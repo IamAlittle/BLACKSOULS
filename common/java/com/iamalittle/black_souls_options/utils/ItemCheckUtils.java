@@ -1,6 +1,7 @@
 package com.iamalittle.black_souls_options.utils;
 
 import com.iamalittle.black_souls_options.config.BlackSoulsConfig;
+import java.util.List;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -24,25 +25,22 @@ public class ItemCheckUtils {
         BlackSoulsConfig.reload();
         
         BlackSoulsConfig config = BlackSoulsConfig.getInstance();
-        String requiredItemId = config.getRequiredItemId();
+        List<String> requiredItemIds = config.getRequiredItemIds();
         boolean checkHeldItem = config.isCheckHeldItem();
         boolean checkWornItem = config.isCheckWornItem();
         
-        // 如果配置为空或"none"，则允许无物品打开
-        if (requiredItemId == null || requiredItemId.isEmpty() || "none".equals(requiredItemId)) {
-            BlackSoulsConfig.debug("ItemCheckUtils", "配置为空或'none'，允许无物品打开界面");
+        // 如果列表为空或包含"none"，则允许无物品打开
+        if (requiredItemIds.isEmpty() || requiredItemIds.contains("none")) {
+            BlackSoulsConfig.debug("ItemCheckUtils", "配置列表为空或包含'none'，允许无物品打开界面");
             return true;
         }
         
-        // 处理多个物品ID（逗号分隔）
-        String[] itemIds = requiredItemId.split(",");
-        
-        BlackSoulsConfig.debug("ItemCheckUtils", "配置物品ID: " + requiredItemId);
+        BlackSoulsConfig.debug("ItemCheckUtils", "配置物品ID列表: " + requiredItemIds);
         BlackSoulsConfig.debug("ItemCheckUtils", "检查手持物品: " + checkHeldItem);
         BlackSoulsConfig.debug("ItemCheckUtils", "检查穿戴物品: " + checkWornItem);
         
         // 检查每个物品ID
-        for (String itemId : itemIds) {
+        for (String itemId : requiredItemIds) {
             itemId = itemId.trim();
             if (itemId.isEmpty()) continue;
             
@@ -131,11 +129,11 @@ public class ItemCheckUtils {
      */
     public static String getRequirementDescription() {
         BlackSoulsConfig config = BlackSoulsConfig.getInstance();
-        String requiredItemId = config.getRequiredItemId();
+        List<String> requiredItemIds = config.getRequiredItemIds();
         boolean checkHeldItem = config.isCheckHeldItem();
         boolean checkWornItem = config.isCheckWornItem();
         
-        if (requiredItemId == null || requiredItemId.isEmpty() || "none".equals(requiredItemId)) {
+        if (requiredItemIds.isEmpty() || requiredItemIds.contains("none")) {
             return "无需任何物品";
         }
         
@@ -150,14 +148,13 @@ public class ItemCheckUtils {
         }
         
         // 处理多个物品ID
-        String[] itemIds = requiredItemId.split(",");
-        if (itemIds.length == 1) {
-            description.append(" ").append(requiredItemId.trim());
+        if (requiredItemIds.size() == 1) {
+            description.append(" ").append(requiredItemIds.get(0).trim());
         } else {
             description.append("以下物品之一：");
-            for (int i = 0; i < itemIds.length; i++) {
+            for (int i = 0; i < requiredItemIds.size(); i++) {
                 if (i > 0) description.append("、");
-                description.append(itemIds[i].trim());
+                description.append(requiredItemIds.get(i).trim());
             }
         }
         

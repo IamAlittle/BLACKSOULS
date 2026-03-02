@@ -1,4 +1,7 @@
 {
+  "black_souls_options.messages.welcome_clickable": "[BlackSouls] If you are entering the game for the first time or need to disable [No Censorship Mode], please click here.",
+  "black_souls_options.messages.welcome_hover": "Click to open game options settings",
+  "black_souls_options.commands.error.client_only": "This command can only be used on the client side",
   "black_souls_options.contracts_screen.title": "Contract List",
   "black_souls_options.contracts_screen.search_hint": "Search...",
   "black_souls_options.contracts_screen.close_button": "Close",
@@ -62,6 +65,7 @@
   "black_souls_options.messages.feigning_death_cannot_use_item": "Cannot use items while feigning death!",
   "black_souls_options.messages.feigning_death_cannot_place_block": "Cannot place blocks while feigning death!",
   "black_souls_options.messages.feigning_death_cannot_eat": "Cannot eat while feigning death!",
+
   "black_souls_options.messages.feigning_death_cannot_use_item_on_block": "Cannot use items on blocks while feigning death!",
   "black_souls_options.messages.totem_of_undying_saved": "You were saved by the Evoker's Totem of Undying effect!",
   "black_souls_options.messages.contract_entity_dead": "Your contract target [%s] at %s has died, and the contract is gone",
@@ -497,5 +501,42 @@
   "black_souls_options.contracts.wolf.display_name": "Pack Leader",
   "black_souls_options.contracts.wolf.description": "Automatically tame wild wolves in the vicinity",
   "black_souls_options.contracts.wolf.effect_title": "Wolf Contract Effects:",
-  "black_souls_options.contracts.wolf.effect1": "- Automatically tame wild wolves within 10 blocks"
+  "black_souls_options.contracts.wolf.effect1": "- Automatically tame wild wolves within 10 blocks",
+
+  "black_souls_options.config.title": "BLACK SOULS Options Configuration",
+  "black_souls_options.config.category.contract_settings": "Contract Settings",
+  "black_souls_options.config.contract_creation_cost": "Souls (Experience) cost for creating contracts",
+  "black_souls_options.config.contract_creation_cost.tooltip": "Souls (Experience) cost required to create a contract",
+  "black_souls_options.config.category.interface_access": "Interface Access Settings",
+  "black_souls_options.config.required_item_id": "Required Item ID",
+  "black_souls_options.config.required_item_id.tooltip": "Item ID required to open the interface, separated by commas",
+  "black_souls_options.config.required_item_ids": "List of item IDs that can trigger the interface",
+  "black_souls_options.config.required_item_ids.tooltip": "List of item IDs that can trigger opening the interface. You can freely add or remove items.",
+  "black_souls_options.config.check_held_item": "Check held item",
+  "black_souls_options.config.check_held_item.tooltip": "Whether to check the held item",
+  "black_souls_options.config.check_worn_item": "Check worn item",
+  "black_souls_options.config.check_worn_item.tooltip": "Whether to check the worn item",
+  "black_souls_options.config.category.kill_attack": "Kill Attack Settings",
+  "black_souls_options.config.enable_instant_kill": "Enable instant kill mode",
+  "black_souls_options.config.enable_instant_kill.tooltip": "Whether to enable instant kill mode, kill option instantly kills the target",
+  "black_souls_options.config.category.debug": "Debug Settings",
+  "black_souls_options.config.enable_debug_mode": "Debug mode",
+  "black_souls_options.config.enable_debug_mode.tooltip": "Enable debug mode, output debug information",
+  "black_souls_options.config.contract_settings": "Contract Settings",
+  "black_souls_options.config.interface_access": "Interface Access Settings",
+  "black_souls_options.config.kill_attack": "Kill Attack Settings",
+  "black_souls_options.config.enable_uncensored_mode": "Uncensored mode",
+  "black_souls_options.config.enable_uncensored_mode.tooltip": "When enabled, keep original text; when disabled, replace sensitive words with censored words",
+  "black_souls_options.target_entity.attack": "Attack",
+  "black_souls_options.target_entity.offend": "Offend",
+  
+  "black_souls_options.welcome_screen.paragraph1": "You have been reborn once again.\nThis form suits you very well this time too.",
+  "black_souls_options.welcome_screen.paragraph2": "Now then... although this is a rather tasteless question...",
+  "black_souls_options.welcome_screen.paragraph3": "Are you interested in sexual behavior?",
+  
+  "black_souls_options.welcome_screen.option.interested": "Interested",
+  "black_souls_options.welcome_screen.option.not_interested": "Not Interested",
+
+  "black_souls_options.welcome_screen.response.interested": "Hehe, you seem like an honest person.\nI think that's really good.",
+  "black_souls_options.welcome_screen.response.not_interested": "Oh! It seems you're a gentleman.\nI'm... a little disappointed..."
 }

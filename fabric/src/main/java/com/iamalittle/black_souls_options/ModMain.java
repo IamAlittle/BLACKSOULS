@@ -35,7 +35,10 @@ public class ModMain implements ClientModInitializer {
 		FabricEvents.setup();
 		ContractTrackerRenderer.setup();
 		
-		// 初始化TOML配置文件
+		// 初始化Cloth Config
+		com.iamalittle.black_souls_options.config.BlackSoulsClothConfig.init();
+		
+		// 初始化配置（保持向后兼容）
 		BlackSoulsConfig.getInstance();
 		
 		// 初始化契约系统，启动定时更新器
